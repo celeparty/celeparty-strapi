@@ -568,6 +568,7 @@ export interface ApiTransactionTransaction extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     customer_name: Schema.Attribute.String;
+    email: Schema.Attribute.String;
     event_date: Schema.Attribute.String;
     loading_date: Schema.Attribute.String;
     loading_time: Schema.Attribute.String;
@@ -578,6 +579,7 @@ export interface ApiTransactionTransaction extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     note: Schema.Attribute.Text;
+    order_id: Schema.Attribute.String;
     payment_status: Schema.Attribute.String & Schema.Attribute.Required;
     products: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;

@@ -45,6 +45,12 @@
     },
     "products": {
       "type": "json"
+    },
+    "order_id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
     }
   }
 }
