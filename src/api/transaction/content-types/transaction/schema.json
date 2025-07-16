@@ -12,12 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "products": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::product.product",
-      "inversedBy": "transactions"
-    },
     "payment_status": {
       "type": "string",
       "required": true
@@ -48,6 +42,9 @@
     },
     "loading_time": {
       "type": "string"
+    },
+    "products": {
+      "type": "json"
     }
   }
 }

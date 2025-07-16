@@ -534,10 +534,6 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     state: Schema.Attribute.Enumeration<['pending', 'rejected', 'approved']> &
       Schema.Attribute.DefaultTo<'pending'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
-    transactions: Schema.Attribute.Relation<
-      'manyToMany',
-      'api::transaction.transaction'
-    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -583,7 +579,7 @@ export interface ApiTransactionTransaction extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     note: Schema.Attribute.Text;
     payment_status: Schema.Attribute.String & Schema.Attribute.Required;
-    products: Schema.Attribute.Relation<'manyToMany', 'api::product.product'>;
+    products: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.String;
     shipping_location: Schema.Attribute.Text;

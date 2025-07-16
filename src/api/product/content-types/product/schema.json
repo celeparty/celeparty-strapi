@@ -95,12 +95,6 @@
       "type": "boolean",
       "default": false
     },
-    "transactions": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::transaction.transaction",
-      "mappedBy": "products"
-    },
     "blogs": {
       "type": "relation",
       "relation": "manyToMany",
