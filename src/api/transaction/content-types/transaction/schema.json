@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "transactions",
+  "info": {
+    "singularName": "transaction",
+    "pluralName": "transactions",
+    "displayName": "transaction",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "products": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product",
+      "inversedBy": "transactions"
+    },
+    "payment_status": {
+      "type": "string",
+      "required": true
+    },
+    "variant": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "string"
+    },
+    "shipping_location": {
+      "type": "text"
+    },
+    "event_date": {
+      "type": "string"
+    },
+    "loading_date": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "telp": {
+      "type": "string"
+    },
+    "note": {
+      "type": "text"
+    },
+    "loading_time": {
+      "type": "string"
+    }
+  }
+}

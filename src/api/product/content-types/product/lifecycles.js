@@ -1,0 +1,55 @@
+module.exports = {
+  async beforeUpdate(event) {
+    const { where } = event.params;
+
+    const existingProduct = await strapi.entityService.findOne('api::product.product', where.id, {
+      populate: ['users_permissions_user'],
+    });
+
+    event.state = {
+      wasUnpublished: !existingProduct.publishedAt,
+      wasNotRejected: existingProduct.state !== 'rejected',
+      userEmail: existingProduct.users_permissions_user?.email,
+    };
+  },
+
+  async afterUpdate(event) {
+    const { result, state } = event;
+    const isNowPublished = !!result.publishedAt;
+
+    // CASE: Dipublish
+    if (result.state ==="approved") {
+      if (state.userEmail) {
+        await strapi.plugins['email'].services.email.send({
+          to: state.userEmail,
+          subject: 'Produk Anda Telah Dipublikasikan',
+          html: `
+            <div>
+              <h2>Produk Anda Telah Dipublikasikan</h2>
+              <p>Produk dengan nama <strong>${result.title}</strong> telah berhasil dipublikasikan.</p>
+            </div>
+          `,
+        });
+      }
+    }
+
+    console.log({state})
+    console.log({result})
+
+    // CASE: Ditolak
+    if (result.state === 'rejected') {
+      if (state.userEmail) {
+        await strapi.plugins['email'].services.email.send({
+          to: state.userEmail,
+          subject: 'Produk Anda Ditolak',
+          html: `
+            <div>
+              <h2>Produk Anda Ditolak</h2>
+              <p>Produk dengan nama <strong>${result.title}</strong> telah ditolak setelah proses review.</p>
+            </div>
+          `,
+        });
+      }
+    }
+  },
+};

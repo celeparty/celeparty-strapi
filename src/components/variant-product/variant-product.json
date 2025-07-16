@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_variant_product_variant_products",
+  "info": {
+    "displayName": "variant-product",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "price": {
+      "type": "integer",
+      "required": true
+    },
+    "quota": {
+      "type": "string",
+      "required": true
+    },
+    "purchase_deadline": {
+      "type": "date",
+      "required": true
+    }
+  }
+}
