@@ -51,6 +51,13 @@
     },
     "email": {
       "type": "string"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "verification": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
