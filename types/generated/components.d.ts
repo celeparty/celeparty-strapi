@@ -8,10 +8,10 @@ export interface VariantProductVariantProduct extends Struct.ComponentSchema {
   };
   attributes: {
     image: Schema.Attribute.Media<'images' | 'files'>;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    price: Schema.Attribute.Integer & Schema.Attribute.Required;
-    purchase_deadline: Schema.Attribute.Date & Schema.Attribute.Required;
-    quota: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String;
+    price: Schema.Attribute.Integer;
+    purchase_deadline: Schema.Attribute.Date;
+    quota: Schema.Attribute.String;
   };
 }
 

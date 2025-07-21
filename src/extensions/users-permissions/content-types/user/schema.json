@@ -99,12 +99,24 @@
       "type": "json"
     },
     "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images",
         "files"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "transactions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction.transaction"
+    },
+    "saldo_active": {
+      "type": "string"
+    },
+    "saldo_refund": {
+      "type": "string"
     }
   }
 }

@@ -8,7 +8,7 @@
   "attributes": {
     "name": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "image": {
       "type": "media",
@@ -21,15 +21,15 @@
     },
     "price": {
       "type": "integer",
-      "required": true
+      "required": false
     },
     "quota": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "purchase_deadline": {
       "type": "date",
-      "required": true
+      "required": false
     }
   }
 }
