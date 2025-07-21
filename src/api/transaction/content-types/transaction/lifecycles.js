@@ -55,7 +55,7 @@ module.exports = {
     if (result.event_type === 'Ticket' && result.email) {
       try {
         // Build QR code URL
-        const baseUrl = 'http://localhost:3000/qr';
+        const baseUrl = process.env.FRONT_URL+'/qr';
         const params = new URLSearchParams({
           order_id: result.order_id,
           event_date: result.event_date,
