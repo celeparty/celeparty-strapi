@@ -2,7 +2,7 @@ module.exports = ({env}) => ({
   'users-permissions': {  
     config: {  
       register: {  
-        allowedFields: ["role", "phone", "address", "name", "birthplace", "birthdate", "nik", "companyName", "serviceLocation", "bankName", "accountNumber", "accountName"],
+        allowedFields: ["role", "phone", "address", "name", "birthplace", "birthdate", "nik", "companyName", "serviceLocation", "bankName", "accountNumber", "accountName", "transactions","saldo_active","saldo_refund"],
       },  
       jwt: {
         expiresIn: '7d',
