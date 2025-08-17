@@ -1,34 +1,27 @@
 {
   "kind": "collectionType",
-  "collectionName": "transactions",
+  "collectionName": "transaction_tickets",
   "info": {
-    "singularName": "transaction",
-    "pluralName": "transactions",
-    "displayName": "transaction",
+    "singularName": "transaction-ticket",
+    "pluralName": "transaction-tickets",
+    "displayName": "transaction-ticket",
     "description": ""
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
-    "payment_status": {
-      "type": "string",
-      "required": true
+    "product_name": {
+      "type": "string"
     },
-    "variant": {
+    "price": {
       "type": "string"
     },
     "quantity": {
       "type": "string"
     },
-    "shipping_location": {
-      "type": "text"
-    },
-    "event_date": {
-      "type": "string"
-    },
-    "loading_date": {
+    "variant": {
       "type": "string"
     },
     "customer_name": {
@@ -37,29 +30,29 @@
     "telp": {
       "type": "string"
     },
-    "note": {
-      "type": "text"
-    },
-    "loading_time": {
+    "total_price": {
       "type": "string"
     },
-    "products": {
-      "type": "json"
+    "payment_status": {
+      "type": "string"
+    },
+    "event_date": {
+      "type": "string"
+    },
+    "note": {
+      "type": "text"
     },
     "order_id": {
       "type": "string"
     },
-    "email": {
-      "type": "string"
-    },
-    "event_type": {
+    "customer_mail": {
       "type": "string"
     },
     "verification": {
       "type": "boolean",
       "default": false
     },
-    "vendor_doc_id": {
+    "vendor_id": {
       "type": "string"
     }
   }

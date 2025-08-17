@@ -552,6 +552,49 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiTransactionTicketTransactionTicket
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'transaction_tickets';
+  info: {
+    description: '';
+    displayName: 'transaction-ticket';
+    pluralName: 'transaction-tickets';
+    singularName: 'transaction-ticket';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    customer_mail: Schema.Attribute.String;
+    customer_name: Schema.Attribute.String;
+    event_date: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::transaction-ticket.transaction-ticket'
+    > &
+      Schema.Attribute.Private;
+    note: Schema.Attribute.Text;
+    order_id: Schema.Attribute.String;
+    payment_status: Schema.Attribute.String;
+    price: Schema.Attribute.String;
+    product_name: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    quantity: Schema.Attribute.String;
+    telp: Schema.Attribute.String;
+    total_price: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    variant: Schema.Attribute.String;
+    vendor_id: Schema.Attribute.String;
+    verification: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+  };
+}
+
 export interface ApiTransactionTransaction extends Struct.CollectionTypeSchema {
   collectionName: 'transactions';
   info: {
@@ -591,6 +634,7 @@ export interface ApiTransactionTransaction extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     variant: Schema.Attribute.String;
+    vendor_doc_id: Schema.Attribute.String;
     verification: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
   };
 }
@@ -1162,6 +1206,7 @@ declare module '@strapi/strapi' {
       'api::blog.blog': ApiBlogBlog;
       'api::category.category': ApiCategoryCategory;
       'api::product.product': ApiProductProduct;
+      'api::transaction-ticket.transaction-ticket': ApiTransactionTicketTransactionTicket;
       'api::transaction.transaction': ApiTransactionTransaction;
       'api::user-event-type.user-event-type': ApiUserEventTypeUserEventType;
       'plugin::content-releases.release': PluginContentReleasesRelease;
