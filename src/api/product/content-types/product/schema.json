@@ -111,7 +111,7 @@
       "default": "pending"
     },
     "event_date": {
-      "type": "string"
+      "type": "date"
     }
   }
 }

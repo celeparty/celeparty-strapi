@@ -505,7 +505,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         }
       >;
     escrow: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    event_date: Schema.Attribute.String;
+    event_date: Schema.Attribute.Date;
     kabupaten: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
