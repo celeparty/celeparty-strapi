@@ -109,6 +109,9 @@
         "approved"
       ],
       "default": "pending"
+    },
+    "event_date": {
+      "type": "string"
     }
   }
 }

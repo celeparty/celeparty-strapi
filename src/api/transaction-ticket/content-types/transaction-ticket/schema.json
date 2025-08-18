@@ -54,6 +54,9 @@
     },
     "vendor_id": {
       "type": "string"
+    },
+    "event_type": {
+      "type": "string"
     }
   }
 }

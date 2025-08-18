@@ -505,6 +505,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         }
       >;
     escrow: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    event_date: Schema.Attribute.String;
     kabupaten: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -571,6 +572,7 @@ export interface ApiTransactionTicketTransactionTicket
     customer_mail: Schema.Attribute.String;
     customer_name: Schema.Attribute.String;
     event_date: Schema.Attribute.String;
+    event_type: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
