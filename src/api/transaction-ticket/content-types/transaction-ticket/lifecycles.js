@@ -32,6 +32,7 @@ async function generateTicketPDF({ url, transaction, status }) {
       doc.text(`Email: ${transaction.customer_mail}`);
       doc.text(`Event Type: ${transaction.event_type}`);
       doc.text(`Tanggal Acara: ${transaction.event_date}`);
+      doc.text(`Status Tiket: ${status}`);
       doc.moveDown();
       doc.text('Scan QR code di bawah ini untuk verifikasi tiket:', { align: 'center' });
       doc.moveDown();
@@ -112,7 +113,7 @@ Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Stat
     console.log('=== AFTER UPDATE ===');
     console.log('Result:', result);
     console.log('State:', state);
-    console.log('Event type:', "Ticket");
+    console.log('Event type:', result.event_type || "Ticket");
     console.log('Customer mail:', result.customer_mail);
     console.log('Payment status:', result.payment_status);
     console.log('Old payment status:', state.oldPaymentStatus);
@@ -151,7 +152,7 @@ Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Stat
         
         // Build email body for payment success
         const emailBody = `
-Halo ${result.customer_name},\n\nPembayaran Anda telah berhasil dikonfirmasi!\n\nDetail Transaksi:\n- Order ID: ${result.order_id}\n- Produk: ${result.product_name}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Total Harga: ${result.total_price}\n- Status Pembayaran: ${result.payment_status}\n- Tanggal Acara: ${result.event_date}\n- \nTiket Anda terlampir dalam bentuk PDF dengan QR code yang dapat digunakan untuk verifikasi di lokasi acara.\n\nTerima kasih telah menggunakan Celeparty!`;
+Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.email}\n- Event Type: ${result.event_type}\n- Status Tiket: ${status}\n\nTiket Anda terlampir dalam bentuk PDF dengan QR code.\n\nTerima kasih telah menggunakan Celeparty!`;
         
         // Determine email subject based on payment status
         const emailSubject = (result.payment_status === 'settlement' || result.payment_status === 'Settlement')

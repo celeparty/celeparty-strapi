@@ -39,6 +39,9 @@
     "event_date": {
       "type": "string"
     },
+    "event_type": {
+      "type": "string"
+    },
     "note": {
       "type": "text"
     },
