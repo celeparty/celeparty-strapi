@@ -30,7 +30,7 @@ async function generateTicketPDF({ url, transaction, status }) {
       doc.fontSize(12).text(`Order ID: ${transaction.order_id}`);
       doc.text(`Nama Pemesan: ${transaction.customer_name}`);
       doc.text(`Email: ${transaction.customer_mail}`);
-      doc.text(`Event Type: ${transaction.event_type}`);
+      doc.text(`Event Type: Ticket`);
       doc.text(`Tanggal Acara: ${transaction.event_date}`);
       doc.text(`Status Tiket: ${status}`);
       doc.moveDown();
@@ -70,7 +70,7 @@ module.exports = {
         const pdfBuffer = await generateTicketPDF({ url: qrUrl, transaction: result, status });
         // Build email body (plain text fallback)
         const emailBody = `
-Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.customer_mail}\n- Event Type: ${result.event_type}\n- \nTiket Anda terlampir dalam bentuk PDF dengan QR code.\n\nTerima kasih telah menggunakan Celeparty!`;
+Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.customer_mail}\n- Event Type: "Ticket"\n- \nTiket Anda terlampir dalam bentuk PDF dengan QR code.\n\nTerima kasih telah menggunakan Celeparty!`;
         await strapi.plugin('email').service('email').send({
           to: result.customer_mail,
           subject: 'Tiket Anda Berhasil Dipesan',
@@ -152,7 +152,7 @@ Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Stat
         
         // Build email body for payment success
         const emailBody = `
-Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.email}\n- Event Type: ${result.event_type}\n- Status Tiket: ${status}\n\nTiket Anda terlampir dalam bentuk PDF dengan QR code.\n\nTerima kasih telah menggunakan Celeparty!`;
+Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.customer_mail}\n- Event Type: ${result.event_type}\n- Status Tiket: ${status}\n\nTiket Anda terlampir dalam bentuk PDF dengan QR code.\n\nTerima kasih telah menggunakan Celeparty!`;
         
         // Determine email subject based on payment status
         const emailSubject = (result.payment_status === 'settlement' || result.payment_status === 'Settlement')
