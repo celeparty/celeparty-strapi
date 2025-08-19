@@ -507,12 +507,14 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     escrow: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     event_date: Schema.Attribute.Date;
     kabupaten: Schema.Attribute.String;
+    kota_event: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::product.product'
     > &
       Schema.Attribute.Private;
+    lokasi_event: Schema.Attribute.String;
     main_image: Schema.Attribute.Media<'images' | 'files', true> &
       Schema.Attribute.Required;
     main_price: Schema.Attribute.Integer &
@@ -550,6 +552,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'variant-product.variant-product',
       true
     >;
+    waktu_event: Schema.Attribute.String;
   };
 }
 

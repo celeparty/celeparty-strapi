@@ -112,6 +112,15 @@
     },
     "event_date": {
       "type": "date"
+    },
+    "waktu_event": {
+      "type": "string"
+    },
+    "lokasi_event": {
+      "type": "string"
+    },
+    "kota_event": {
+      "type": "string"
     }
   }
 }
