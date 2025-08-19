@@ -118,15 +118,13 @@ Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Stat
     console.log('Payment status:', result.payment_status);
     console.log('Old payment status:', state.oldPaymentStatus);
     
-    // Check if payment status changed to 'settlement' (primary focus)
+    // Check if payment status is 'settlement' (primary focus)
     const isSettlement = result.payment_status === 'settlement' || result.payment_status === 'Settlement';
-    const wasNotSettlement = state.oldPaymentStatus !== 'settlement' && state.oldPaymentStatus !== 'Settlement';
     
     console.log('Is settlement:', isSettlement);
-    console.log('Was not settlement:', wasNotSettlement);
     console.log('Has customer mail:', !!result.customer_mail);
     
-    const shouldSendEmail = result.customer_mail && isSettlement && wasNotSettlement;
+    const shouldSendEmail = result.customer_mail && isSettlement;
     
     console.log('Should send email:', shouldSendEmail);
     
