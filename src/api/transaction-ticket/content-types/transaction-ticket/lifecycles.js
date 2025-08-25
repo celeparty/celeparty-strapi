@@ -32,6 +32,8 @@ async function generateTicketPDF({ url, transaction, status }) {
       doc.text(`Email: ${transaction.customer_mail}`);
       doc.text(`Event Type: Ticket`);
       doc.text(`Tanggal Acara: ${transaction.event_date}`);
+      doc.text(`Varian: ${transaction.variant}`);
+      doc.text(`Quantity: ${transaction.quantity}`);
       doc.text(`Status Tiket: ${status}`);
       doc.moveDown();
       doc.text('Scan QR code di bawah ini untuk verifikasi tiket:', { align: 'center' });
@@ -42,6 +44,10 @@ async function generateTicketPDF({ url, transaction, status }) {
         align: 'center',
         valign: 'center',
       });
+      doc.text('Harap tidak membagikan barcode ini ke pihak lain.', { align: 'center' });
+      doc.text('Satu barcode mewakili seluruh jumlah tiket dalam transaksi Anda.', { align: 'center' });
+
+
       doc.end();
     } catch (err) {
       reject(err);
