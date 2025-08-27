@@ -30,6 +30,7 @@ async function generateTicketPDF({ url, transaction, status }) {
       doc.fontSize(12).text(`Order ID: ${transaction.order_id}`);
       doc.text(`Nama Pemesan: ${transaction.customer_name}`);
       doc.text(`Email: ${transaction.customer_mail}`);
+      doc.text(`Nama Event: ${transaction.product_name || 'N/A'}`);
       doc.text(`Event Type: Ticket`);
       doc.text(`Tanggal Acara: ${transaction.event_date}`);
       doc.text(`Varian: ${transaction.variant}`);
