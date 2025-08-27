@@ -505,7 +505,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         }
       >;
     escrow: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    event_date: Schema.Attribute.Date;
+    event_date: Schema.Attribute.Date & Schema.Attribute.Required;
     kabupaten: Schema.Attribute.String;
     kota_event: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -520,6 +520,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     main_price: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<0>;
+    maximal_order_date: Schema.Attribute.Date;
     minimal_order: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<1>;
@@ -657,6 +658,7 @@ export interface ApiUserEventTypeUserEventType
     draftAndPublish: true;
   };
   attributes: {
+    application_fee: Schema.Attribute.Integer;
     categories: Schema.Attribute.Relation<
       'manyToMany',
       'api::category.category'

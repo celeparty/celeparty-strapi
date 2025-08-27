@@ -36,6 +36,9 @@
       "relation": "oneToMany",
       "target": "api::product.product",
       "mappedBy": "user_event_type"
+    },
+    "application_fee": {
+      "type": "integer"
     }
   }
 }

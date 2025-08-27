@@ -111,7 +111,8 @@
       "default": "pending"
     },
     "event_date": {
-      "type": "date"
+      "type": "date",
+      "required": true
     },
     "waktu_event": {
       "type": "string"
@@ -121,6 +122,9 @@
     },
     "kota_event": {
       "type": "string"
+    },
+    "maximal_order_date": {
+      "type": "date"
     }
   }
 }
