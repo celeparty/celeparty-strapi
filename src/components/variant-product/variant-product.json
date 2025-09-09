@@ -28,8 +28,7 @@
       "required": false
     },
     "purchase_deadline": {
-      "type": "date",
-      "required": false
+      "type": "string"
     }
   }
 }

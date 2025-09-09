@@ -112,7 +112,7 @@
     },
     "event_date": {
       "type": "date",
-      "required": true
+      "required": false
     },
     "waktu_event": {
       "type": "string"
