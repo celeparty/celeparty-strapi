@@ -37,14 +37,15 @@ module.exports = {
 async function sendSaldoRefundNotification(user) {
 	try {
 		// Email template untuk user
+		const isRefundCompleted = parseFloat(user.saldo_refund || 0) === 0;
 		const userEmailTemplate = {
 			to: user.email,
-			subject: 'Perubahan Saldo Refund - Celeparty',
+			subject: isRefundCompleted ? 'Refund Selesai Diproses - Celeparty' : 'Perubahan Saldo Refund - Celeparty',
 			html: `
 				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-					<h2 style="color: #333;">Perubahan Saldo Refund</h2>
+					<h2 style="color: #333;">${isRefundCompleted ? 'Refund Selesai Diproses' : 'Perubahan Saldo Refund'}</h2>
 					<p>Halo ${user.name || user.username},</p>
-					<p>Saldo refund Anda sedang diproses:</p>
+					<p>${isRefundCompleted ? 'Proses Refund selesai diproses.' : 'Saldo refund Anda sedang diproses:'}</p>
 					<div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
 						<p><strong>Saldo Refund:</strong> Rp ${parseFloat(user.saldo_refund || 0).toLocaleString('id-ID')}</p>
 					</div>
@@ -67,6 +68,7 @@ async function sendSaldoRefundNotification(user) {
 						<p><strong>Nama:</strong> ${user.name || user.username}</p>
 						<p><strong>Email:</strong> ${user.email}</p>
 						<p><strong>Saldo Refund:</strong> Rp ${parseFloat(user.saldo_refund || 0).toLocaleString('id-ID')}</p>
+						<p><strong>Status:</strong> ${isRefundCompleted ? 'Refund Selesai Diproses' : 'Refund Sedang Diproses'}</p>
 						<p><strong>Waktu:</strong> ${new Date().toLocaleString('id-ID')}</p>
 					</div>
 					<p>Silakan periksa perubahan ini di admin panel.</p>
