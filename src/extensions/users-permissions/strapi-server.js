@@ -1,4 +1,10 @@
 module.exports = (plugin) => {
+	// Import lifecycle functions
+	const userLifecycles = require('./content-types/user/lifecycles.js');
+	
+	// Register lifecycles for the user content type
+	plugin.contentTypes.user.lifecycles = userLifecycles;
+	
 	const sanitizeUser = (user) => {
 		const { password, resetPasswordToken, confirmationToken, ...sanitizedUser } = user;
 		return sanitizedUser;
