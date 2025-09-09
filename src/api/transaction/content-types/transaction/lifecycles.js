@@ -31,6 +31,8 @@ async function generateTicketPDF({ url, transaction, status }) {
       doc.text(`Nama Pemesan: ${transaction.customer_name}`);
       doc.text(`Email: ${transaction.email}`);
       doc.text(`Event Type: ${transaction.event_type}`);
+      doc.text(`Varian: ${transaction.variant}`);
+      doc.text(`Quantity: ${transaction.quantity}`);
       doc.text(`Tanggal Acara: ${transaction.event_date}`);
       doc.text(`Status Tiket: ${status}`);
       doc.moveDown();
