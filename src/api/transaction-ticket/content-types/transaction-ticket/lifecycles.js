@@ -99,15 +99,61 @@ module.exports = {
         documentId: vendorId
       }
     });    
-
+    const userEventTypes = await strapi.entityService.findMany('api::user-event-type.user-event-type', {
+      filters: {
+        id: 15
+      }
+    });
     console.log("vendorData", vendorData);
-  
-    
-
+ 
+    const feeMidtrans = 5000
+    const feeCeleparty = userEventTypes.application_fee
 
     // Check if payment status changed to 'settlement' (primary focus)
     const isSettlement = result.payment_status === 'settlement' || result.payment_status === 'Settlement';
     const wasNotSettlement = state.oldPaymentStatus !== 'settlement' && state.oldPaymentStatus !== 'Settlement';
+    
+    // Update vendor balance when payment is settled
+    if (isSettlement && wasNotSettlement && vendorData.length > 0) {
+      try {
+        const vendor = vendorData[0];
+        const totalPrice = parseFloat(result.total_price) || 0;
+        const quantity = parseInt(result.quantity) || 1;
+        
+        // Calculate fees: feeMidtrans * quantity + (total_price * 2.5%)
+        const totalFee = (feeMidtrans * quantity) + (totalPrice * 0.025);
+        
+        // Calculate update saldo: total_price - totalFee
+        const updateSaldo = totalPrice - totalFee;
+        
+        // Get current saldo_active
+        const currentSaldo = parseFloat(vendor.saldo_active || '0');
+        
+        // Calculate new saldo
+        const newSaldo = currentSaldo + updateSaldo;
+        
+        strapi.log.info(`Updating vendor balance for vendor ${vendorId}:`);
+        strapi.log.info(`- Total Price: ${totalPrice}`);
+        strapi.log.info(`- Quantity: ${quantity}`);
+        strapi.log.info(`- Fee Midtrans: ${feeMidtrans * quantity}`);
+        strapi.log.info(`- Fee Celeparty (2.5%): ${totalPrice * 0.025}`);
+        strapi.log.info(`- Total Fee: ${totalFee}`);
+        strapi.log.info(`- Update Saldo: ${updateSaldo}`);
+        strapi.log.info(`- Current Saldo: ${currentSaldo}`);
+        strapi.log.info(`- New Saldo: ${newSaldo}`);
+        
+        // Update vendor saldo_active
+        await strapi.query('plugin::users-permissions.user').update({
+          where: { id: vendor.id },
+          data: { saldo_active: newSaldo.toString() }
+        });
+        
+        strapi.log.info(`Vendor balance updated successfully for vendor ${vendorId}: ${currentSaldo} -> ${newSaldo}`);
+        
+      } catch (error) {
+        strapi.log.error('Error updating vendor balance:', error);
+      }
+    }
     
     console.log('Is settlement:', isSettlement);
     console.log('Was not settlement:', wasNotSettlement);
