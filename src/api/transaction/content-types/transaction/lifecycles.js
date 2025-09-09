@@ -62,6 +62,8 @@ module.exports = {
           customer_name: result.customer_name,
           email: result.email,
           event_type: result.event_type,
+          variant: result.variant,
+          quantity: result.quantity,
         }).toString();
         const qrUrl = `${baseUrl}?${params}`;
         // Determine ticket status
