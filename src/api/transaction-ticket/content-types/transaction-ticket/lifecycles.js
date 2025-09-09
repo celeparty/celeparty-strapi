@@ -81,6 +81,8 @@ module.exports = {
     }
   },
 
+
+
   async afterUpdate(event) {
     const { result, state } = event;
     console.log('=== AFTER UPDATE ===');
@@ -90,7 +92,19 @@ module.exports = {
     console.log('Customer mail:', result.customer_mail);
     console.log('Payment status:', result.payment_status);
     console.log('Old payment status:', state.oldPaymentStatus);
+
+    const vendorId = result.vendor_id;
+    const vendorData = await strapi.entityService.findMany('plugin::users-permissions.user', {
+      filters: {
+        documentId: vendorId
+      }
+    });    
+
+    console.log("vendorData", vendorData);
+  
     
+
+
     // Check if payment status changed to 'settlement' (primary focus)
     const isSettlement = result.payment_status === 'settlement' || result.payment_status === 'Settlement';
     const wasNotSettlement = state.oldPaymentStatus !== 'settlement' && state.oldPaymentStatus !== 'Settlement';

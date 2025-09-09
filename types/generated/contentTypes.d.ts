@@ -454,9 +454,6 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    application_fee: Schema.Attribute.Decimal &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<0>;
     blogs: Schema.Attribute.Relation<'oneToMany', 'api::blog.blog'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
