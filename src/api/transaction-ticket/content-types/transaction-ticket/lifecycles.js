@@ -213,19 +213,73 @@ module.exports = {
               // Update produk dengan variant yang sudah dikurangi stoknya DAN langsung set publishedAt
               const publishDate = new Date();
               
-              // Untuk Strapi 5.x, gunakan documentId untuk update
-              const updateResult = await strapi.entityService.update('api::product.product', product.documentId, {
-                data: {
-                  variant: updatedVariants,
-                  publishedAt: publishDate
+              console.log('=== ATTEMPTING TO PUBLISH PRODUCT ===');
+              console.log('Product ID:', product.id);
+              console.log('Product documentId:', product.documentId);
+              console.log('Publish date:', publishDate);
+              console.log('Current product publishedAt before update:', product.publishedAt);
+              
+              try {
+                // Coba dengan id biasa terlebih dahulu (Strapi 5.x)
+                const updateResult = await strapi.entityService.update('api::product.product', product.id, {
+                  data: {
+                    variant: updatedVariants,
+                    publishedAt: publishDate
+                  }
+                });
+                
+                console.log('=== UPDATE RESULT (using ID) ===');
+                console.log('Update successful:', !!updateResult);
+                console.log('Updated product publishedAt:', updateResult?.publishedAt);
+                console.log('Product status after update:', updateResult?.publishedAt ? 'Published' : 'Draft');
+                
+                // Jika masih draft, coba dengan documentId
+                if (!updateResult?.publishedAt) {
+                  console.log('=== TRYING WITH DOCUMENT ID ===');
+                  
+                  try {
+                    const updateWithDocId = await strapi.entityService.update('api::product.product', product.documentId, {
+                      data: {
+                        variant: updatedVariants,
+                        publishedAt: new Date()
+                      }
+                    });
+                    
+                    console.log('Document ID approach result:', updateWithDocId?.publishedAt ? 'Published' : 'Still Draft');
+                    
+                    // Jika masih gagal, coba pendekatan terpisah
+                    if (!updateWithDocId?.publishedAt) {
+                      console.log('=== TRYING SEPARATE OPERATIONS ===');
+                      
+                      // Update variant dulu
+                      await strapi.entityService.update('api::product.product', product.id, {
+                        data: {
+                          variant: updatedVariants
+                        }
+                      });
+                      
+                      // Kemudian publish terpisah
+                      const finalResult = await strapi.entityService.update('api::product.product', product.id, {
+                        data: {
+                          publishedAt: new Date()
+                        }
+                      });
+                      
+                      console.log('Separate operations result:', finalResult?.publishedAt ? 'Published' : 'Still Draft');
+                    }
+                    
+                  } catch (docIdError) {
+                    console.log('Document ID approach error:', docIdError);
+                  }
                 }
-              });
-              
-              console.log('Update result:', updateResult ? 'Success' : 'Failed');
-              console.log('Published date set to:', publishDate);
-              console.log('Product status after update:', updateResult?.publishedAt ? 'Published' : 'Draft');
-              
-              strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items and product published`);
+                
+                strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items and attempting to publish`);
+                
+              } catch (updateError) {
+                console.log('=== UPDATE ERROR ===');
+                console.log('Error updating product:', updateError);
+                strapi.log.error('Error updating product with stock and publish:', updateError);
+              }
             } else {
               console.log('No matching variant found for stock reduction');
             }
