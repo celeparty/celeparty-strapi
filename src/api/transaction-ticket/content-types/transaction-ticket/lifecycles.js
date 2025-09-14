@@ -216,22 +216,30 @@ module.exports = {
               console.log('Current product publishedAt before update:', product.publishedAt);
               
               try {
-                // STEP 1: Update stok variant dalam satu operasi atomic dengan publish
-                // Pastikan stok dan publish dilakukan bersamaan agar tidak ada race condition
+                // STEP 1: Update stok variant dulu (ini akan masuk ke draft)
+                console.log('=== UPDATING STOCK (DRAFT) ===');
                 const updateResult = await strapi.entityService.update('api::product.product', product.id, {
                   data: {
-                    variant: updatedVariants,
-                    publishedAt: new Date() // Set publishedAt bersamaan dengan update variant
+                    variant: updatedVariants
                   }
                 });
                 
-                console.log('=== UPDATE RESULT ===');
-                console.log('Update successful:', !!updateResult);
-                console.log('Updated variants:', updateResult?.variant?.length);
-                console.log('Updated product publishedAt:', updateResult?.publishedAt);
-                console.log('Product status after update:', updateResult?.publishedAt ? 'Published' : 'Draft');
+                console.log('Stock update result:', !!updateResult);
+                console.log('Updated variants count:', updateResult?.variant?.length);
                 
-                // Verifikasi bahwa stok benar-benar ter-update dan ter-publish
+                // STEP 2: Publish perubahan menggunakan Document Service (Strapi 5.x)
+                console.log('=== PUBLISHING CHANGES ===');
+                console.log('Using documentId for publish:', product.documentId);
+                
+                const publishResult = await strapi.documents('api::product.product').publish({
+                  documentId: product.documentId
+                });
+                
+                console.log('=== PUBLISH RESULT ===');
+                console.log('Publish successful:', !!publishResult);
+                console.log('Published document ID:', publishResult?.documentId);
+                
+                // STEP 3: Verifikasi bahwa perubahan benar-benar ter-publish
                 const verificationResult = await strapi.entityService.findOne('api::product.product', product.id, {
                   populate: ['variant']
                 });
@@ -246,46 +254,30 @@ module.exports = {
                   console.log(`Verified ${variant} quota:`, updatedVariant.quota);
                 }
                 
-                if (verificationResult?.publishedAt) {
-                  strapi.log.info(`✅ SUCCESS: Stock reduced for product ${productName}, variant ${variant}: ${quantity} items and product published`);
+                if (verificationResult?.publishedAt && updatedVariant) {
+                  strapi.log.info(`✅ SUCCESS: Stock reduced for product ${productName}, variant ${variant}: ${quantity} items and changes published to live version`);
                 } else {
-                  strapi.log.error(`❌ FAILED: Product ${productName} stock updated but not published`);
-                  
-                  // Fallback: Coba force publish
-                  console.log('=== FALLBACK: FORCE PUBLISH ===');
-                  const forcePublishResult = await strapi.entityService.update('api::product.product', product.id, {
-                    data: {
-                      publishedAt: new Date()
-                    }
-                  });
-                  console.log('Force publish result:', forcePublishResult?.publishedAt ? 'Success' : 'Failed');
+                  strapi.log.error(`❌ FAILED: Product ${productName} stock updated but changes not published to live version`);
                 }
                 
               } catch (updateError) {
-                console.log('=== UPDATE ERROR ===');
-                console.log('Error updating product:', updateError);
-                strapi.log.error('Error updating product with stock and publish:', updateError);
+                console.log('=== UPDATE/PUBLISH ERROR ===');
+                console.log('Error:', updateError);
+                strapi.log.error('Error updating and publishing product:', updateError);
                 
-                // Fallback: Coba update terpisah jika atomic update gagal
+                // Fallback: Coba dengan method lama jika Document Service gagal
                 try {
-                  console.log('=== FALLBACK: SEPARATE UPDATE ===');
+                  console.log('=== FALLBACK: LEGACY METHOD ===');
                   
-                  // Update stok dulu
-                  const stockUpdateResult = await strapi.entityService.update('api::product.product', product.id, {
+                  // Update dengan publishedAt langsung
+                  const fallbackResult = await strapi.entityService.update('api::product.product', product.id, {
                     data: {
-                      variant: updatedVariants
-                    }
-                  });
-                  
-                  // Kemudian publish
-                  const publishResult = await strapi.entityService.update('api::product.product', product.id, {
-                    data: {
+                      variant: updatedVariants,
                       publishedAt: new Date()
                     }
                   });
                   
-                  console.log('Fallback stock update:', !!stockUpdateResult);
-                  console.log('Fallback publish result:', publishResult?.publishedAt ? 'Published' : 'Failed');
+                  console.log('Fallback result:', fallbackResult?.publishedAt ? 'Published' : 'Failed');
                   
                 } catch (fallbackError) {
                   console.log('Fallback error:', fallbackError);
