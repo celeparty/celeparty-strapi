@@ -11,23 +11,42 @@ module.exports = {
 	async beforeUpdate(event) {
 		const { data, where } = event.params;
   
-		if (data.saldo_refund !== undefined) {
-			console.log("Before Update - saldo_refund:", data.saldo_refund, "User ID:", where.id);
+		// Simpan nilai lama saldo_refund untuk perbandingan
+		if (data.saldo_refund !== undefined && where.id) {
+			try {
+				const currentUser = await strapi.entityService.findOne('plugin::users-permissions.user', where.id);
+				event.state = {
+					...event.state,
+					oldSaldoRefund: currentUser.saldo_refund
+				};
+				console.log("Before Update - saldo_refund:", data.saldo_refund, "Old saldo_refund:", currentUser.saldo_refund, "User ID:", where.id);
+			} catch (error) {
+				console.log("Error getting old saldo_refund:", error);
+			}
 		}
 	},
   
 	async afterUpdate(event) {
-		const { result, params } = event; // hasil akhir setelah update
+		const { result, state } = event;
 		console.log("After Update - result:", result);
 		
-		if (result.saldo_refund !== undefined) {
-			console.log("After Update - saldo_refund:", result.saldo_refund, "User ID:", result.id);
+		// Hanya kirim email jika saldo_refund benar-benar berubah
+		if (result.saldo_refund !== undefined && state.oldSaldoRefund !== undefined) {
+			const oldValue = parseFloat(state.oldSaldoRefund || 0);
+			const newValue = parseFloat(result.saldo_refund || 0);
 			
-			// Kirim email notifikasi jika ada perubahan saldo_refund
-			try {
-				await sendSaldoRefundNotification(result);
-			} catch (error) {
-				console.error("Error sending saldo_refund notification:", error);
+			// Cek apakah nilai benar-benar berubah
+			if (oldValue !== newValue) {
+				console.log("After Update - saldo_refund changed:", oldValue, "->", newValue, "User ID:", result.id);
+				
+				// Kirim email notifikasi hanya jika ada perubahan
+				try {
+					await sendSaldoRefundNotification(result);
+				} catch (error) {
+					console.error("Error sending saldo_refund notification:", error);
+				}
+			} else {
+				console.log("After Update - saldo_refund unchanged:", newValue, "User ID:", result.id);
 			}
 		}
 	},
