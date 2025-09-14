@@ -210,15 +210,16 @@ module.exports = {
             });
             
             if (stockReduced) {
-              // Update produk dengan variant yang sudah dikurangi stoknya dan langsung publish
+              // Update produk dengan variant yang sudah dikurangi stoknya
               const updateResult = await strapi.entityService.update('api::product.product', product.id, {
                 data: {
-                  variant: updatedVariants
-                },
-                status: 'published' // Strapi v5.x menggunakan status parameter untuk publish
+                  variant: updatedVariants,
+                  publishedAt: new Date() // Force publish dengan publishedAt
+                }
               });
               
               console.log('Update result:', updateResult ? 'Success' : 'Failed');
+              console.log('Published status after update:', updateResult.publishedAt);
               strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items`);
             } else {
               console.log('No matching variant found for stock reduction');
