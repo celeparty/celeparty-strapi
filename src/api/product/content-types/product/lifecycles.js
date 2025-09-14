@@ -10,7 +10,7 @@ module.exports = {
       wasUnpublished: !existingProduct.publishedAt,
       wasNotRejected: existingProduct.state !== 'rejected',
       userEmail: existingProduct.users_permissions_user?.email,
-      isStockUpdate: data.variant && !data.state, // Deteksi update stok (ada variant tapi tidak ada state)
+      isStockUpdate: data.variant && !data.state && !data.publishedAt, // Deteksi update stok (ada variant tapi tidak ada state dan tidak ada publishedAt)
     };
   },
 
