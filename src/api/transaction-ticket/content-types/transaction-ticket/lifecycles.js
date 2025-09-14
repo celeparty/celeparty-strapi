@@ -188,14 +188,21 @@ module.exports = {
               return v;
             });
             
-            // Update produk dengan variant yang sudah dikurangi stoknya dan langsung publish
-            await strapi.db.query('api::product.product').update({
-              where: { id: product.id },
+            // Update produk dengan variant yang sudah dikurangi stoknya dan publish
+            const updatedProduct = await strapi.entityService.update('api::product.product', product.id, {
               data: {
-                variant: updatedVariants,
-                publishedAt: new Date()
+                variant: updatedVariants
               }
             });
+            
+            // Pastikan produk ter-publish dengan update publishedAt
+            if (!updatedProduct.publishedAt) {
+              await strapi.entityService.update('api::product.product', product.id, {
+                data: {
+                  publishedAt: new Date()
+                }
+              });
+            }
             
             strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items`);
           }
