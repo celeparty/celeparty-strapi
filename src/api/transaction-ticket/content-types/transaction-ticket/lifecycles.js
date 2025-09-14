@@ -213,14 +213,23 @@ module.exports = {
               // Update produk dengan variant yang sudah dikurangi stoknya
               const updateResult = await strapi.entityService.update('api::product.product', product.id, {
                 data: {
-                  variant: updatedVariants,
-                  publishedAt: new Date() // Force publish dengan publishedAt
+                  variant: updatedVariants
+                }
+              });
+              
+              // Force publish dengan direct database query untuk bypass lifecycle hooks
+              const publishDate = new Date();
+              await strapi.db.query('api::product.product').update({
+                where: { id: product.id },
+                data: {
+                  publishedAt: publishDate,
+                  updatedAt: publishDate
                 }
               });
               
               console.log('Update result:', updateResult ? 'Success' : 'Failed');
-              console.log('Published status after update:', updateResult.publishedAt);
-              strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items`);
+              console.log('Force published with date:', publishDate);
+              strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items and force published`);
             } else {
               console.log('No matching variant found for stock reduction');
             }
