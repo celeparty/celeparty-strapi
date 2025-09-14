@@ -191,7 +191,8 @@ module.exports = {
             // Update produk dengan variant yang sudah dikurangi stoknya
             await strapi.entityService.update('api::product.product', product.id, {
               data: {
-                variant: updatedVariants
+                variant: updatedVariants,
+                publishedAt: new Date() // Publish produk agar frontend mendapat update
               }
             });
             
