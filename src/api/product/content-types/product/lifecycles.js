@@ -1,6 +1,6 @@
 module.exports = {
   async beforeUpdate(event) {
-    const { where } = event.params;
+    const { where, data } = event.params;
 
     const existingProduct = await strapi.entityService.findOne('api::product.product', where.id, {
       populate: ['users_permissions_user'],
@@ -10,12 +10,19 @@ module.exports = {
       wasUnpublished: !existingProduct.publishedAt,
       wasNotRejected: existingProduct.state !== 'rejected',
       userEmail: existingProduct.users_permissions_user?.email,
+      isStockUpdate: data.variant && !data.state, // Deteksi update stok (ada variant tapi tidak ada state)
     };
   },
 
   async afterUpdate(event) {
     const { result, state } = event;
     const isNowPublished = !!result.publishedAt;
+
+    // Skip email notifications untuk update stok
+    if (state.isStockUpdate) {
+      console.log('Stock update detected, skipping email notifications');
+      return;
+    }
 
     // CASE: Dipublish
     if (result.state ==="approved") {

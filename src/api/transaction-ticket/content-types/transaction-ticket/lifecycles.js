@@ -210,26 +210,27 @@ module.exports = {
             });
             
             if (stockReduced) {
-              // Update produk dengan variant yang sudah dikurangi stoknya
+              // Update produk dengan variant yang sudah dikurangi stoknya DAN langsung set publishedAt
+              const publishDate = new Date();
               const updateResult = await strapi.entityService.update('api::product.product', product.id, {
                 data: {
-                  variant: updatedVariants
+                  variant: updatedVariants,
+                  publishedAt: publishDate
                 }
               });
               
-              // Force publish dengan direct database query untuk bypass lifecycle hooks
-              const publishDate = new Date();
-              await strapi.db.query('api::product.product').update({
-                where: { id: product.id },
-                data: {
-                  publishedAt: publishDate,
-                  updatedAt: publishDate
-                }
-              });
+              // Jika masih null, coba dengan knex raw query yang aman
+              if (!updateResult.publishedAt) {
+                await strapi.db.connection.raw(
+                  'UPDATE products SET published_at = ?, updated_at = ? WHERE id = ?',
+                  [publishDate, publishDate, product.id]
+                );
+                console.log('Used raw query to force publish');
+              }
               
               console.log('Update result:', updateResult ? 'Success' : 'Failed');
-              console.log('Force published with date:', publishDate);
-              strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items and force published`);
+              console.log('Published date set to:', publishDate);
+              strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items and published`);
             } else {
               console.log('No matching variant found for stock reduction');
             }
