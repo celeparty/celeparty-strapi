@@ -113,6 +113,13 @@ module.exports = {
     const isSettlement = result.payment_status === 'settlement' || result.payment_status === 'Settlement';
     const wasNotSettlement = state.oldPaymentStatus !== 'settlement' && state.oldPaymentStatus !== 'Settlement';
     
+    console.log('=== STOCK REDUCTION CHECK ===');
+    console.log('Current payment status:', result.payment_status);
+    console.log('Old payment status:', state.oldPaymentStatus);
+    console.log('Is settlement:', isSettlement);
+    console.log('Was not settlement:', wasNotSettlement);
+    console.log('Should reduce stock:', isSettlement && wasNotSettlement);
+    
     // Update vendor balance when payment is settled
     if (isSettlement && wasNotSettlement && vendorData.length > 0) {
       try {
@@ -158,10 +165,15 @@ module.exports = {
     // Reduce product stock when payment is settled
     if (isSettlement && wasNotSettlement) {
       try {
+        console.log('=== REDUCING STOCK ===');
         // Ambil data produk dari transaksi
         const productName = result.product_name;
         const quantity = parseInt(result.quantity) || 1;
         const variant = result.variant;
+        
+        console.log('Product name:', productName);
+        console.log('Quantity to reduce:', quantity);
+        console.log('Variant:', variant);
         
         // Cari produk berdasarkan nama
         const products = await strapi.entityService.findMany('api::product.product', {
@@ -171,15 +183,24 @@ module.exports = {
           populate: ['variant']
         });
         
+        console.log('Found products:', products.length);
+        
         if (products.length > 0) {
           const product = products[0];
+          console.log('Product ID:', product.id);
+          console.log('Product documentId:', product.documentId);
+          console.log('Product variants:', product.variant);
           
           // Update stok di variant yang sesuai
           if (product.variant && product.variant.length > 0) {
+            let stockReduced = false;
             const updatedVariants = product.variant.map(v => {
+              console.log('Checking variant:', v.name, 'vs', variant);
               if (v.name === variant) {
                 const currentQuota = parseInt(v.quota) || 0;
                 const newQuota = Math.max(0, currentQuota - quantity);
+                console.log(`Reducing stock: ${currentQuota} -> ${newQuota}`);
+                stockReduced = true;
                 return {
                   ...v,
                   quota: newQuota.toString()
@@ -188,18 +209,28 @@ module.exports = {
               return v;
             });
             
-            // Update produk dengan variant yang sudah dikurangi stoknya dan langsung publish
-            await strapi.entityService.update('api::product.product', product.documentId, {
-              data: {
-                variant: updatedVariants
-              },
-              status: 'published' // Strapi v5.x menggunakan status parameter untuk publish
-            });
-            
-            strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items`);
+            if (stockReduced) {
+              // Update produk dengan variant yang sudah dikurangi stoknya dan langsung publish
+              const updateResult = await strapi.entityService.update('api::product.product', product.id, {
+                data: {
+                  variant: updatedVariants
+                },
+                status: 'published' // Strapi v5.x menggunakan status parameter untuk publish
+              });
+              
+              console.log('Update result:', updateResult ? 'Success' : 'Failed');
+              strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items`);
+            } else {
+              console.log('No matching variant found for stock reduction');
+            }
+          } else {
+            console.log('No variants found in product');
           }
+        } else {
+          console.log('No product found with name:', productName);
         }
       } catch (error) {
+        console.log('Error in stock reduction:', error);
         strapi.log.error('Error reducing product stock:', error);
       }
     }
