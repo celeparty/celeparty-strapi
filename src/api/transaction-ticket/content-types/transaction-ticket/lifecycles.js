@@ -154,6 +154,54 @@ module.exports = {
         strapi.log.error('Error updating vendor balance:', error);
       }
     }
+
+    // Reduce product stock when payment is settled
+    if (isSettlement && wasNotSettlement) {
+      try {
+        // Ambil data produk dari transaksi
+        const productName = result.product_name;
+        const quantity = parseInt(result.quantity) || 1;
+        const variant = result.variant;
+        
+        // Cari produk berdasarkan nama
+        const products = await strapi.entityService.findMany('api::product.product', {
+          filters: {
+            title: productName
+          },
+          populate: ['variant']
+        });
+        
+        if (products.length > 0) {
+          const product = products[0];
+          
+          // Update stok di variant yang sesuai
+          if (product.variant && product.variant.length > 0) {
+            const updatedVariants = product.variant.map(v => {
+              if (v.name === variant) {
+                const currentQuota = parseInt(v.quota) || 0;
+                const newQuota = Math.max(0, currentQuota - quantity);
+                return {
+                  ...v,
+                  quota: newQuota.toString()
+                };
+              }
+              return v;
+            });
+            
+            // Update produk dengan variant yang sudah dikurangi stoknya
+            await strapi.entityService.update('api::product.product', product.id, {
+              data: {
+                variant: updatedVariants
+              }
+            });
+            
+            strapi.log.info(`Stock reduced for product ${productName}, variant ${variant}: ${quantity} items`);
+          }
+        }
+      } catch (error) {
+        strapi.log.error('Error reducing product stock:', error);
+      }
+    }
     
     console.log('Is settlement:', isSettlement);
     console.log('Was not settlement:', wasNotSettlement);
