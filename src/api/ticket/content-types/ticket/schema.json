@@ -1,0 +1,124 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tickets",
+  "info": {
+    "singularName": "ticket",
+    "pluralName": "tickets",
+    "displayName": "ticket",
+    "description": "Ticket products for events"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "category": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::category.category"
+    },
+    "minimal_order": {
+      "type": "integer",
+      "required": true,
+      "default": 1
+    },
+    "minimal_order_date": {
+      "type": "date"
+    },
+    "variant": {
+      "type": "component",
+      "repeatable": true,
+      "component": "variant-product.variant-product"
+    },
+    "main_image": {
+      "type": "media",
+      "multiple": true,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "description": {
+      "type": "customField",
+      "options": {
+        "preset": "default"
+      },
+      "customField": "plugin::ckeditor5.CKEditor"
+    },
+    "main_price": {
+      "type": "integer",
+      "default": 0,
+      "required": true
+    },
+    "rate": {
+      "type": "decimal",
+      "default": 5
+    },
+    "kabupaten": {
+      "type": "string",
+      "required": false
+    },
+    "region": {
+      "type": "string"
+    },
+    "price_min": {
+      "type": "decimal",
+      "required": true,
+      "default": 0
+    },
+    "price_max": {
+      "type": "decimal",
+      "default": 0,
+      "required": true
+    },
+    "sold_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "escrow": {
+      "type": "boolean",
+      "default": false
+    },
+    "blogs": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog.blog",
+      "mappedBy": "tickets"
+    },
+    "state": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "rejected",
+        "approved"
+      ],
+      "default": "pending"
+    },
+    "event_date": {
+      "type": "date",
+      "required": false
+    },
+    "waktu_event": {
+      "type": "string"
+    },
+    "lokasi_event": {
+      "type": "string"
+    },
+    "kota_event": {
+      "type": "string"
+    },
+    "maximal_order_date": {
+      "type": "date"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
 const { Readable } = require('stream');
+const crypto = require('crypto');
 
 function getTicketStatus(eventDate) {
   const today = new Date();
@@ -10,7 +11,11 @@ function getTicketStatus(eventDate) {
   return today <= event ? 'active' : 'not active';
 }
 
-async function generateTicketPDF({ url, transaction, status }) {
+function generateUniqueBarcode() {
+  return crypto.randomBytes(16).toString('hex').toUpperCase();
+}
+
+async function generateTicketPDF({ url, transaction, status, recipientName, recipientEmail, barcode }) {
   return new Promise(async (resolve, reject) => {
     try {
       // Generate QR code as data URL
@@ -30,11 +35,13 @@ async function generateTicketPDF({ url, transaction, status }) {
       doc.fontSize(12).text(`Order ID: ${transaction.order_id}`);
       doc.text(`Nama Pemesan: ${transaction.customer_name}`);
       doc.text(`Email: ${transaction.customer_mail}`);
+      doc.text(`Nama Penerima: ${recipientName}`);
+      doc.text(`Email Penerima: ${recipientEmail}`);
+      doc.text(`Barcode: ${barcode}`);
       doc.text(`Nama Event: ${transaction.product_name || 'N/A'}`);
       doc.text(`Event Type: Ticket`);
       doc.text(`Tanggal Acara: ${transaction.event_date}`);
       doc.text(`Varian: ${transaction.variant}`);
-      doc.text(`Quantity: ${transaction.quantity}`);
       doc.text(`Status Tiket: ${status}`);
       doc.moveDown();
       doc.text('Scan QR code di bawah ini untuk verifikasi tiket:', { align: 'center' });
@@ -46,8 +53,7 @@ async function generateTicketPDF({ url, transaction, status }) {
         valign: 'center',
       });
       doc.text('Harap tidak membagikan barcode ini ke pihak lain.', { align: 'center' });
-      doc.text('Satu barcode mewakili seluruh jumlah tiket dalam transaksi Anda.', { align: 'center' });
-
+      doc.text('Setiap tiket memiliki barcode unik.', { align: 'center' });
 
       doc.end();
     } catch (err) {
@@ -112,6 +118,48 @@ module.exports = {
     // Check if payment status changed to 'settlement' (primary focus)
     const isSettlement = result.payment_status === 'settlement' || result.payment_status === 'Settlement';
     const wasNotSettlement = state.oldPaymentStatus !== 'settlement' && state.oldPaymentStatus !== 'Settlement';
+
+    // Generate individual ticket details if quantity > 1 and payment is settled
+    if (isSettlement && wasNotSettlement && parseInt(result.quantity) > 1) {
+      try {
+        const quantity = parseInt(result.quantity);
+        const ticketDetails = [];
+
+        // Check if ticket details already exist
+        const existingDetails = await strapi.entityService.findMany('api::ticket-detail.ticket-detail', {
+          filters: {
+            transaction_ticket: result.id
+          }
+        });
+
+        if (existingDetails.length === 0) {
+        // Generate individual ticket details
+          for (let i = 0; i < quantity; i++) {
+            const barcode = generateUniqueBarcode();
+            // Use recipient data if available, otherwise default to customer data
+            const recipientData = result.recipients && result.recipients[i] ? result.recipients[i] : {
+              name: result.customer_name,
+              email: result.customer_mail
+            };
+
+            const ticketDetail = await strapi.entityService.create('api::ticket-detail.ticket-detail', {
+              data: {
+                recipient_name: recipientData.name,
+                recipient_email: recipientData.email,
+                barcode: barcode,
+                status: 'active',
+                transaction_ticket: result.id,
+                publishedAt: new Date()
+              }
+            });
+            ticketDetails.push(ticketDetail);
+          }
+          strapi.log.info(`Generated ${quantity} individual ticket details for transaction ${result.order_id}`);
+        }
+      } catch (error) {
+        strapi.log.error('Error generating individual ticket details:', error);
+      }
+    }
     
     console.log('=== STOCK REDUCTION CHECK ===');
     console.log('Current payment status:', result.payment_status);
@@ -308,48 +356,108 @@ module.exports = {
     console.log('Should send email:', shouldSendEmail);
     
     if (shouldSendEmail) {
-      
       try {
-        // Build QR code URL
-        const baseUrl = process.env.FRONT_URL+'/qr';
-        const params = new URLSearchParams({
-          order_id: result.order_id,
-          event_date: result.event_date,
-          customer_name: result.customer_name,
-          email: result.customer_mail,
-          event_type: result.event_type,
-        }).toString();
-        const qrUrl = `${baseUrl}?${params}`;
-        
-        // Determine ticket status
-        const status = getTicketStatus(result.event_date);
-        
-        // Generate PDF with QR code
-        const pdfBuffer = await generateTicketPDF({ url: qrUrl, transaction: result, status });
-        
-        // Build email body for payment success
-        const emailBody = `
-Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.customer_mail}\n- Event Type: ${result.event_type}\n- Status Tiket: ${status}\n\nTiket Anda terlampir dalam bentuk PDF dengan QR code.\n\nTerima kasih telah menggunakan Celeparty!`;
-        
-        // Determine email subject based on payment status
-        const emailSubject = (result.payment_status === 'settlement' || result.payment_status === 'Settlement')
-          ? 'Pembayaran Settlement - Tiket Anda Siap!' 
-          : 'Pembayaran Berhasil - Tiket Anda Siap!';
-        
-        await strapi.plugin('email').service('email').send({
-          to: result.customer_mail,
-          subject: emailSubject,
-          text: emailBody,
-          attachments: [
-            {
-              filename: `ticket-${result.order_id}.pdf`,
-              content: pdfBuffer,
-              contentType: 'application/pdf',
+        const quantity = parseInt(result.quantity);
+
+        if (quantity > 1) {
+          // Handle multiple individual tickets
+          const ticketDetails = await strapi.entityService.findMany('api::ticket-detail.ticket-detail', {
+            filters: {
+              transaction_ticket: result.id
             },
-          ],
-        });
-        
-        strapi.log.info(`Email konfirmasi pembayaran (${result.payment_status}) berhasil dikirim ke ${result.customer_mail} untuk order ${result.order_id}`);
+            populate: ['transaction_ticket']
+          });
+
+          if (ticketDetails.length > 0) {
+            // Send individual emails for each ticket
+            for (const ticketDetail of ticketDetails) {
+              const baseUrl = process.env.FRONT_URL + '/qr';
+              const params = new URLSearchParams({
+                barcode: ticketDetail.barcode,
+                event_date: result.event_date,
+                customer_name: result.customer_name,
+                email: result.customer_mail,
+                event_type: result.event_type,
+              }).toString();
+              const qrUrl = `${baseUrl}?${params}`;
+
+              const status = getTicketStatus(result.event_date);
+              const pdfBuffer = await generateTicketPDF({
+                url: qrUrl,
+                transaction: result,
+                status,
+                recipientName: ticketDetail.recipient_name,
+                recipientEmail: ticketDetail.recipient_email,
+                barcode: ticketDetail.barcode
+              });
+
+              const emailBody = `
+Halo ${ticketDetail.recipient_name},\n\nTransaksi Anda telah berhasil. Berikut detail tiket Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Barcode: ${ticketDetail.barcode}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.customer_mail}\n- Event Type: ${result.event_type}\n- Status Tiket: ${status}\n\nTiket Anda terlampir dalam bentuk PDF dengan QR code unik.\n\nTerima kasih telah menggunakan Celeparty!`;
+
+              const emailSubject = (result.payment_status === 'settlement' || result.payment_status === 'Settlement')
+                ? `Pembayaran Settlement - Tiket Anda Siap! (Barcode: ${ticketDetail.barcode})`
+                : `Pembayaran Berhasil - Tiket Anda Siap! (Barcode: ${ticketDetail.barcode})`;
+
+              await strapi.plugin('email').service('email').send({
+                to: ticketDetail.recipient_email,
+                subject: emailSubject,
+                text: emailBody,
+                attachments: [
+                  {
+                    filename: `ticket-${result.order_id}-${ticketDetail.barcode}.pdf`,
+                    content: pdfBuffer,
+                    contentType: 'application/pdf',
+                  },
+                ],
+              });
+
+              strapi.log.info(`Email individual ticket sent to ${ticketDetail.recipient_email} for barcode ${ticketDetail.barcode}`);
+            }
+          }
+        } else {
+          // Handle single ticket (backward compatibility)
+          const baseUrl = process.env.FRONT_URL + '/qr';
+          const params = new URLSearchParams({
+            order_id: result.order_id,
+            event_date: result.event_date,
+            customer_name: result.customer_name,
+            email: result.customer_mail,
+            event_type: result.event_type,
+          }).toString();
+          const qrUrl = `${baseUrl}?${params}`;
+
+          const status = getTicketStatus(result.event_date);
+          const pdfBuffer = await generateTicketPDF({
+            url: qrUrl,
+            transaction: result,
+            status,
+            recipientName: result.customer_name,
+            recipientEmail: result.customer_mail,
+            barcode: result.order_id
+          });
+
+          const emailBody = `
+Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.customer_mail}\n- Event Type: ${result.event_type}\n- Status Tiket: ${status}\n\nTiket Anda terlampir dalam bentuk PDF dengan QR code.\n\nTerima kasih telah menggunakan Celeparty!`;
+
+          const emailSubject = (result.payment_status === 'settlement' || result.payment_status === 'Settlement')
+            ? 'Pembayaran Settlement - Tiket Anda Siap!'
+            : 'Pembayaran Berhasil - Tiket Anda Siap!';
+
+          await strapi.plugin('email').service('email').send({
+            to: result.customer_mail,
+            subject: emailSubject,
+            text: emailBody,
+            attachments: [
+              {
+                filename: `ticket-${result.order_id}.pdf`,
+                content: pdfBuffer,
+                contentType: 'application/pdf',
+              },
+            ],
+          });
+
+          strapi.log.info(`Email konfirmasi pembayaran (${result.payment_status}) berhasil dikirim ke ${result.customer_mail} untuk order ${result.order_id}`);
+        }
       } catch (err) {
         strapi.log.error('Gagal mengirim email konfirmasi pembayaran:', err);
       }

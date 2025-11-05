@@ -60,6 +60,15 @@
     },
     "event_type": {
       "type": "string"
+    },
+    "recipients": {
+      "type": "json"
+    },
+    "ticket_details": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ticket-detail.ticket-detail",
+      "mappedBy": "transaction_ticket"
     }
   }
 }

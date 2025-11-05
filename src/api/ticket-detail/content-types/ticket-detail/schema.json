@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ticket_details",
+  "info": {
+    "singularName": "ticket-detail",
+    "pluralName": "ticket-details",
+    "displayName": "ticket-detail",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "recipient_name": {
+      "type": "string",
+      "required": true
+    },
+    "recipient_email": {
+      "type": "email",
+      "required": true
+    },
+    "barcode": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "active",
+        "used",
+        "cancelled"
+      ],
+      "default": "active",
+      "required": true
+    },
+    "transaction_ticket": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::transaction-ticket.transaction-ticket",
+      "inversedBy": "ticket_details"
+    }
+  }
+}
