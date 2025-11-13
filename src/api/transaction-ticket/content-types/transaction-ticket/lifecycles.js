@@ -145,6 +145,9 @@ module.exports = {
             const ticketDetail = await strapi.entityService.create('api::ticket-detail.ticket-detail', {
               data: {
                 recipient_name: recipientData.name,
+                identity_type: recipientData.identity_type || 'KTP',
+                identity_number: recipientData.identity_number || '',
+                whatsapp_number: recipientData.whatsapp_number || '',
                 recipient_email: recipientData.email,
                 barcode: barcode,
                 status: 'active',

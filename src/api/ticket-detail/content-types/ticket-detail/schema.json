@@ -16,6 +16,23 @@
       "type": "string",
       "required": true
     },
+    "identity_type": {
+      "type": "enumeration",
+      "enum": [
+        "KTP",
+        "SIM",
+        "Lainnya"
+      ],
+      "required": true
+    },
+    "identity_number": {
+      "type": "string",
+      "required": true
+    },
+    "whatsapp_number": {
+      "type": "string",
+      "required": true
+    },
     "recipient_email": {
       "type": "email",
       "required": true
