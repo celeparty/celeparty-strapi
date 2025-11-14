@@ -69,6 +69,101 @@ async function generateTicketPDF({ url, transaction, status, recipientName, reci
   });
 }
 
+async function generateInvoicePDF({ transaction, ticketDetails }) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Create PDF
+      const doc = new PDFDocument();
+      const buffers = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfData = Buffer.concat(buffers);
+        resolve(pdfData);
+      });
+
+      // Header
+      doc.fontSize(20).text('INVOICE', { align: 'center' });
+      doc.fontSize(14).text('Celeparty Event Management', { align: 'center' });
+      doc.moveDown();
+
+      // Invoice details
+      doc.fontSize(12);
+      doc.text(`Invoice Number: INV-${transaction.order_id}`);
+      doc.text(`Order ID: ${transaction.order_id}`);
+      doc.text(`Date: ${new Date().toLocaleDateString('id-ID')}`);
+      doc.moveDown();
+
+      // Customer details
+      doc.fontSize(14).text('Bill To:', { underline: true });
+      doc.fontSize(12);
+      doc.text(`Name: ${transaction.customer_name}`);
+      doc.text(`Email: ${transaction.customer_mail}`);
+      doc.text(`Phone: ${transaction.telp}`);
+      doc.moveDown();
+
+      // Event details
+      doc.fontSize(14).text('Event Details:', { underline: true });
+      doc.fontSize(12);
+      doc.text(`Event Name: ${transaction.product_name}`);
+      doc.text(`Event Date: ${transaction.event_date}`);
+      doc.text(`Event Type: ${transaction.event_type}`);
+      doc.text(`Variant: ${transaction.variant}`);
+      doc.moveDown();
+
+      // Items table
+      doc.fontSize(14).text('Items:', { underline: true });
+      doc.moveDown(0.5);
+
+      // Table headers
+      const tableTop = doc.y;
+      doc.fontSize(10);
+      doc.text('No.', 50, tableTop);
+      doc.text('Recipient Name', 80, tableTop);
+      doc.text('Email', 200, tableTop);
+      doc.text('Barcode', 350, tableTop);
+      doc.text('Price', 480, tableTop);
+
+      // Draw line
+      doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
+
+      // Table rows
+      let yPosition = doc.y + 15;
+      ticketDetails.forEach((detail, index) => {
+        doc.fontSize(9);
+        doc.text(`${index + 1}`, 50, yPosition);
+        doc.text(detail.recipient_name, 80, yPosition);
+        doc.text(detail.recipient_email, 200, yPosition);
+        doc.text(detail.barcode, 350, yPosition);
+        doc.text(`Rp ${parseInt(transaction.price).toLocaleString('id-ID')}`, 480, yPosition);
+        yPosition += 20;
+      });
+
+      // Draw line after items
+      doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
+      yPosition += 10;
+
+      // Total
+      doc.fontSize(12);
+      doc.text(`Total Quantity: ${transaction.quantity}`, 350, yPosition);
+      doc.text(`Total Amount: Rp ${parseInt(transaction.total_price).toLocaleString('id-ID')}`, 350, yPosition + 20);
+
+      // Payment status
+      doc.moveDown(2);
+      doc.fontSize(12);
+      doc.text(`Payment Status: ${transaction.payment_status === 'settlement' ? 'Paid' : 'Pending'}`, { align: 'right' });
+
+      // Footer
+      doc.moveDown(2);
+      doc.fontSize(10).text('Thank you for choosing Celeparty!', { align: 'center' });
+      doc.text('For any questions, please contact our support team.', { align: 'center' });
+
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 module.exports = createCoreController('api::transaction-ticket.transaction-ticket', ({ strapi }) => ({
   // Custom method for sending tickets to multiple recipients
   async sendTickets(ctx) {
@@ -272,6 +367,42 @@ Terima kasih telah menggunakan Celeparty!`;
     } catch (error) {
       strapi.log.error('Error verifying QR code:', error);
       ctx.internalServerError('Failed to verify ticket');
+    }
+  },
+
+  // Custom method for generating invoice
+  async generateInvoice(ctx) {
+    try {
+      const { id } = ctx.params;
+
+      if (!id) {
+        return ctx.badRequest('Transaction ID is required');
+      }
+
+      // Get transaction with ticket details
+      const transaction = await strapi.entityService.findOne('api::transaction-ticket.transaction-ticket', id, {
+        populate: ['ticket_details']
+      });
+
+      if (!transaction) {
+        return ctx.notFound('Transaction not found');
+      }
+
+      // Generate invoice PDF
+      const pdfBuffer = await generateInvoicePDF({
+        transaction: transaction,
+        ticketDetails: transaction.ticket_details || []
+      });
+
+      // Set response headers for PDF download
+      ctx.set('Content-Type', 'application/pdf');
+      ctx.set('Content-Disposition', `attachment; filename="invoice-${transaction.order_id}.pdf"`);
+
+      ctx.send(pdfBuffer);
+
+    } catch (error) {
+      strapi.log.error('Error generating invoice:', error);
+      ctx.internalServerError('Failed to generate invoice');
     }
   }
 }));

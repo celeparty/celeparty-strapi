@@ -16,6 +16,10 @@ module.exports = createCoreRouter('api::transaction-ticket.transaction-ticket', 
       policies: [],
       middlewares: [],
     },
+    generateInvoice: {
+      policies: [],
+      middlewares: [],
+    },
   },
   routes: [
     {
@@ -30,6 +34,14 @@ module.exports = createCoreRouter('api::transaction-ticket.transaction-ticket', 
       method: 'POST',
       path: '/transaction-tickets/verifyQR',
       handler: 'transaction-ticket.verifyQR',
+      config: {
+        policies: [],
+      },
+    },
+    {
+      method: 'GET',
+      path: '/transaction-tickets/generateInvoice/:id',
+      handler: 'transaction-ticket.generateInvoice',
       config: {
         policies: [],
       },

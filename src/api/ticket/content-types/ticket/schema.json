@@ -55,6 +55,13 @@
       },
       "customField": "plugin::ckeditor5.CKEditor"
     },
+    "terms_conditions": {
+      "type": "customField",
+      "options": {
+        "preset": "default"
+      },
+      "customField": "plugin::ckeditor5.CKEditor"
+    },
     "main_price": {
       "type": "integer",
       "default": 0,

@@ -3,6 +3,101 @@ const PDFDocument = require('pdfkit');
 const { Readable } = require('stream');
 const crypto = require('crypto');
 
+async function generateInvoicePDF({ transaction, ticketDetails }) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Create PDF
+      const doc = new PDFDocument();
+      const buffers = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfData = Buffer.concat(buffers);
+        resolve(pdfData);
+      });
+
+      // Header
+      doc.fontSize(20).text('INVOICE', { align: 'center' });
+      doc.fontSize(14).text('Celeparty Event Management', { align: 'center' });
+      doc.moveDown();
+
+      // Invoice details
+      doc.fontSize(12);
+      doc.text(`Invoice Number: INV-${transaction.order_id}`);
+      doc.text(`Order ID: ${transaction.order_id}`);
+      doc.text(`Date: ${new Date().toLocaleDateString('id-ID')}`);
+      doc.moveDown();
+
+      // Customer details
+      doc.fontSize(14).text('Bill To:', { underline: true });
+      doc.fontSize(12);
+      doc.text(`Name: ${transaction.customer_name}`);
+      doc.text(`Email: ${transaction.customer_mail}`);
+      doc.text(`Phone: ${transaction.telp}`);
+      doc.moveDown();
+
+      // Event details
+      doc.fontSize(14).text('Event Details:', { underline: true });
+      doc.fontSize(12);
+      doc.text(`Event Name: ${transaction.product_name}`);
+      doc.text(`Event Date: ${transaction.event_date}`);
+      doc.text(`Event Type: ${transaction.event_type}`);
+      doc.text(`Variant: ${transaction.variant}`);
+      doc.moveDown();
+
+      // Items table
+      doc.fontSize(14).text('Items:', { underline: true });
+      doc.moveDown(0.5);
+
+      // Table headers
+      const tableTop = doc.y;
+      doc.fontSize(10);
+      doc.text('No.', 50, tableTop);
+      doc.text('Recipient Name', 80, tableTop);
+      doc.text('Email', 200, tableTop);
+      doc.text('Barcode', 350, tableTop);
+      doc.text('Price', 480, tableTop);
+
+      // Draw line
+      doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
+
+      // Table rows
+      let yPosition = doc.y + 15;
+      ticketDetails.forEach((detail, index) => {
+        doc.fontSize(9);
+        doc.text(`${index + 1}`, 50, yPosition);
+        doc.text(detail.recipient_name, 80, yPosition);
+        doc.text(detail.recipient_email, 200, yPosition);
+        doc.text(detail.barcode, 350, yPosition);
+        doc.text(`Rp ${parseInt(transaction.price).toLocaleString('id-ID')}`, 480, yPosition);
+        yPosition += 20;
+      });
+
+      // Draw line after items
+      doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
+      yPosition += 10;
+
+      // Total
+      doc.fontSize(12);
+      doc.text(`Total Quantity: ${transaction.quantity}`, 350, yPosition);
+      doc.text(`Total Amount: Rp ${parseInt(transaction.total_price).toLocaleString('id-ID')}`, 350, yPosition + 20);
+
+      // Payment status
+      doc.moveDown(2);
+      doc.fontSize(12);
+      doc.text(`Payment Status: ${transaction.payment_status === 'settlement' ? 'Paid' : 'Pending'}`, { align: 'right' });
+
+      // Footer
+      doc.moveDown(2);
+      doc.fontSize(10).text('Thank you for choosing Celeparty!', { align: 'center' });
+      doc.text('For any questions, please contact our support team.', { align: 'center' });
+
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 function getTicketStatus(eventDate) {
   const today = new Date();
   const event = new Date(eventDate);
@@ -358,6 +453,63 @@ module.exports = {
     
     console.log('Should send email:', shouldSendEmail);
     
+    // Send invoice email when payment is settled
+    if (isSettlement && wasNotSettlement && result.customer_mail) {
+      try {
+        // Get ticket details for invoice
+        const ticketDetails = await strapi.entityService.findMany('api::ticket-detail.ticket-detail', {
+          filters: {
+            transaction_ticket: result.id
+          }
+        });
+
+        // Generate invoice PDF
+        const invoiceBuffer = await generateInvoicePDF({
+          transaction: result,
+          ticketDetails: ticketDetails.length > 0 ? ticketDetails : [{
+            recipient_name: result.customer_name,
+            recipient_email: result.customer_mail,
+            barcode: result.order_id
+          }]
+        });
+
+        // Send invoice email
+        const invoiceEmailBody = `
+Halo ${result.customer_name},
+
+Terlampir adalah invoice untuk pembelian tiket Anda.
+
+Detail Transaksi:
+- Order ID: ${result.order_id}
+- Event: ${result.product_name}
+- Tanggal Event: ${result.event_date}
+- Varian: ${result.variant}
+- Jumlah: ${result.quantity}
+- Total: Rp ${parseInt(result.total_price).toLocaleString('id-ID')}
+
+Invoice telah dilampirkan dalam bentuk PDF.
+
+Terima kasih telah menggunakan Celeparty!`;
+
+        await strapi.plugin('email').service('email').send({
+          to: result.customer_mail,
+          subject: `Invoice - Order ${result.order_id}`,
+          text: invoiceEmailBody,
+          attachments: [
+            {
+              filename: `invoice-${result.order_id}.pdf`,
+              content: invoiceBuffer,
+              contentType: 'application/pdf',
+            },
+          ],
+        });
+
+        strapi.log.info(`Invoice email sent to ${result.customer_mail} for order ${result.order_id}`);
+      } catch (invoiceError) {
+        strapi.log.error('Error sending invoice email:', invoiceError);
+      }
+    }
+
     if (shouldSendEmail) {
       try {
         const quantity = parseInt(result.quantity);
