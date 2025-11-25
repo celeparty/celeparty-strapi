@@ -6,8 +6,11 @@ const crypto = require('crypto');
 async function generateInvoicePDF({ transaction, ticketDetails }) {
   return new Promise(async (resolve, reject) => {
     try {
+      const logoPath = path.resolve(__dirname, '../../../../public/images/logo-white.png');
+      const logoExists = fs.existsSync(logoPath);
+
       // Create PDF
-      const doc = new PDFDocument();
+      const doc = new PDFDocument({ margin: 50 });
       const buffers = [];
       doc.on('data', buffers.push.bind(buffers));
       doc.on('end', () => {
@@ -15,16 +18,22 @@ async function generateInvoicePDF({ transaction, ticketDetails }) {
         resolve(pdfData);
       });
 
-      // Header
-      doc.fontSize(20).text('INVOICE', { align: 'center' });
-      doc.fontSize(14).text('Celeparty Event Management', { align: 'center' });
-      doc.moveDown();
+      // Header with colored background and logo
+      doc.rect(0, 0, doc.page.width, 70).fill('#3E2882'); // Use c-blue from tailwind.config.js
+      if (logoExists) {
+        doc.image(logoPath, 50, 15, { width: 100 });
+      }
+      doc.fillColor('white').fontSize(20).text('INVOICE', 160, 25, { align: 'left' });
+      doc.fillColor('white').fontSize(14).text('Celeparty Event Management', 160, 50, { align: 'left' });
+
+      doc.moveDown(3);
 
       // Invoice details
-      doc.fontSize(12);
+      doc.fillColor('black').fontSize(12);
       doc.text(`Invoice Number: INV-${transaction.order_id}`);
       doc.text(`Order ID: ${transaction.order_id}`);
       doc.text(`Date: ${new Date().toLocaleDateString('id-ID')}`);
+
       doc.moveDown();
 
       // Customer details
@@ -33,6 +42,7 @@ async function generateInvoicePDF({ transaction, ticketDetails }) {
       doc.text(`Name: ${transaction.customer_name}`);
       doc.text(`Email: ${transaction.customer_mail}`);
       doc.text(`Phone: ${transaction.telp}`);
+
       doc.moveDown();
 
       // Event details
@@ -42,6 +52,7 @@ async function generateInvoicePDF({ transaction, ticketDetails }) {
       doc.text(`Event Date: ${transaction.event_date}`);
       doc.text(`Event Type: ${transaction.event_type}`);
       doc.text(`Variant: ${transaction.variant}`);
+
       doc.moveDown();
 
       // Items table
@@ -87,9 +98,15 @@ async function generateInvoicePDF({ transaction, ticketDetails }) {
       doc.text(`Payment Status: ${transaction.payment_status === 'settlement' ? 'Paid' : 'Pending'}`, { align: 'right' });
 
       // Footer
-      doc.moveDown(2);
-      doc.fontSize(10).text('Thank you for choosing Celeparty!', { align: 'center' });
-      doc.text('For any questions, please contact our support team.', { align: 'center' });
+      const footerY = doc.page.height - 50;
+      doc.rect(0, footerY - 10, doc.page.width, 50).fill('#3E2882');
+      doc.fillColor('white').fontSize(10).text(`Tanggal dibuat: ${new Date().toLocaleDateString('id-ID')}`, 50, footerY, { align: 'left' });
+      doc.fillColor('white').fontSize(10).text('Contact: support@celeparty.com | IG: @celeparty_official | FB: Celeparty', -50, footerY, { align: 'right' });
+
+      // Footer text - thank you note (no longer needed due to custom footer design)
+      // doc.moveDown(2);
+      // doc.fontSize(10).text('Thank you for choosing Celeparty!', { align: 'center' });
+      // doc.text('For any questions, please contact our support team.', { align: 'center' });
 
       doc.end();
     } catch (err) {
@@ -110,24 +127,39 @@ function generateUniqueBarcode() {
   return crypto.randomBytes(16).toString('hex').toUpperCase();
 }
 
+const path = require('path');
+const fs = require('fs');
+
 async function generateTicketPDF({ url, transaction, status, recipientName, recipientEmail, barcode }) {
   return new Promise(async (resolve, reject) => {
     try {
+      const logoPath = path.resolve(__dirname, '../../../../public/images/logo-white.png');
+      const logoExists = fs.existsSync(logoPath);
+
       // Generate QR code as data URL
       const qrDataUrl = await QRCode.toDataURL(url);
       // Extract base64 from data URL
       const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, "");
       // Create PDF
-      const doc = new PDFDocument();
+      const doc = new PDFDocument({ margin: 50 });
       const buffers = [];
       doc.on('data', buffers.push.bind(buffers));
       doc.on('end', () => {
         const pdfData = Buffer.concat(buffers);
         resolve(pdfData);
       });
-      doc.fontSize(18).text('E-Ticket Celeparty', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(12).text(`Order ID: ${transaction.order_id}`);
+
+      // Header with colored background and logo
+      doc.rect(0, 0, doc.page.width, 70).fill('#3E2882'); // Use c-blue from tailwind.config.js
+      if (logoExists) {
+        doc.image(logoPath, 50, 15, { width: 100 });
+      }
+      doc.fillColor('white').fontSize(20).text('Celeparty E-Ticket', 160, 25, { align: 'left' });
+
+      doc.moveDown(3);
+
+      doc.fillColor('black').fontSize(12);
+      doc.text(`Order ID: ${transaction.order_id}`);
       doc.text(`Nama Pemesan: ${transaction.customer_name}`);
       doc.text(`Email: ${transaction.customer_mail}`);
       doc.text(`Nama Penerima: ${recipientName}`);
@@ -138,17 +170,31 @@ async function generateTicketPDF({ url, transaction, status, recipientName, reci
       doc.text(`Tanggal Acara: ${transaction.event_date}`);
       doc.text(`Varian: ${transaction.variant}`);
       doc.text(`Status Tiket: ${status}`);
+
       doc.moveDown();
+
       doc.text('Scan QR code di bawah ini untuk verifikasi tiket:', { align: 'center' });
       doc.moveDown();
+
       // Insert QR code image
       doc.image(Buffer.from(qrBase64, 'base64'), {
         fit: [200, 200],
         align: 'center',
         valign: 'center',
       });
+
+      doc.moveDown();
+
       doc.text('Harap tidak membagikan barcode ini ke pihak lain.', { align: 'center' });
       doc.text('Setiap tiket memiliki barcode unik.', { align: 'center' });
+
+      // Footer
+      const footerY = doc.page.height - 50;
+      doc.rect(0, footerY - 10, doc.page.width, 50).fill('#3E2882');
+      const dateStr = `Tanggal dibuat: ${new Date().toLocaleDateString('id-ID')}`;
+      doc.fillColor('white').fontSize(10).text(dateStr, 50, footerY, { align: 'left' });
+      const contactInfo = 'Contact: support@celeparty.com | IG: @celeparty_official | FB: Celeparty';
+      doc.fillColor('white').fontSize(10).text(contactInfo, -50, footerY, { align: 'right' });  // -50 to offset right edge
 
       doc.end();
     } catch (err) {
@@ -482,10 +528,41 @@ Terima kasih,
 Tim Celeparty
 `;
 
+            // Use HTML email for vendor confirmation
+            const vendorEmailHTML = `
+<html>
+  <body style="font-family: Arial, sans-serif; margin:0; padding:0;">
+    <div style="background-color:#3E2882; padding:10px 20px; color:white; display:flex; align-items:center;">
+      <img src="${process.env.FRONT_URL}/images/logo-white.png" alt="Celeparty Logo" style="height:40px;"/>
+      <h2 style="margin-left:15px;">Konfirmasi Pesanan Baru</h2>
+    </div>
+    <div style="padding:20px; color:#333;">
+      <p>Halo Vendor,</p>
+      <p>Anda menerima pesanan baru untuk produk peralatan event Anda.</p>
+      <h3>Detail Pesanan:</h3>
+      <ul>
+        <li><strong>Order ID:</strong> ${result.order_id}</li>
+        <li><strong>Produk:</strong> ${result.product_name}</li>
+        <li><strong>Jumlah:</strong> ${result.quantity}</li>
+        <li><strong>Total Harga:</strong> Rp ${parseInt(result.total_price).toLocaleString('id-ID')}</li>
+        <li><strong>Tanggal Event:</strong> ${result.event_date}</li>
+        <li><strong>Status Pembayaran:</strong> ${result.payment_status}</li>
+      </ul>
+      <p>Silakan cek sistem untuk detail lebih lanjut.</p>
+      <p>Terima kasih,<br/>Tim Celeparty</p>
+    </div>
+    <div style="background-color:#3E2882; color:white; padding:10px 20px; font-size:12px; display:flex; justify-content:space-between;">
+      <div>Contact: support@celeparty.com</div>
+      <div>IG: @celeparty_official | FB: Celeparty</div>
+    </div>
+  </body>
+</html>`;
+
             await strapi.plugin('email').service('email').send({
               to: vendorEmail,
               subject: emailSubject,
               text: emailBody,
+              html: vendorEmailHTML,
             });
 
             strapi.log.info(`Konfirmasi pesanan baru telah dikirim ke email vendor: ${vendorEmail} untuk order ${result.order_id}`);
@@ -546,10 +623,41 @@ Invoice telah dilampirkan dalam bentuk PDF.
 
 Terima kasih telah menggunakan Celeparty!`;
 
+        const invoiceEmailHTML = `
+<html>
+  <body style="font-family: Arial, sans-serif; margin:0; padding:0;">
+    <div style="background-color:#3E2882; padding:10px 20px; color:white; display:flex; align-items:center;">
+      <img src="${process.env.FRONT_URL}/images/logo-white.png" alt="Celeparty Logo" style="height:40px;"/>
+      <h2 style="margin-left:15px;">Invoice Pembelian Tiket</h2>
+    </div>
+    <div style="padding:20px; color:#333;">
+      <p>Halo ${result.customer_name},</p>
+      <p>Terlampir adalah invoice untuk pembelian tiket Anda.</p>
+      <h3>Detail Transaksi:</h3>
+      <ul>
+        <li><strong>Order ID:</strong> ${result.order_id}</li>
+        <li><strong>Event:</strong> ${result.product_name}</li>
+        <li><strong>Tanggal Event:</strong> ${result.event_date}</li>
+        <li><strong>Varian:</strong> ${result.variant}</li>
+        <li><strong>Jumlah:</strong> ${result.quantity}</li>
+        <li><strong>Total:</strong> Rp ${parseInt(result.total_price).toLocaleString('id-ID')}</li>
+      </ul>
+      <p>Invoice telah dilampirkan dalam bentuk PDF.</p>
+      <p>Terima kasih telah menggunakan Celeparty!</p>
+    </div>
+    <div style="background-color:#3E2882; color:white; padding:10px 20px; font-size:12px; display:flex; justify-content:space-between;">
+      <div>Contact: support@celeparty.com</div>
+      <div>IG: @celeparty_official | FB: Celeparty</div>
+    </div>
+  </body>
+</html>
+`;
+
         await strapi.plugin('email').service('email').send({
           to: result.customer_mail,
           subject: `Invoice - Order ${result.order_id}`,
           text: invoiceEmailBody,
+          html: invoiceEmailHTML,
           attachments: [
             {
               filename: `invoice-${result.order_id}.pdf`,
@@ -608,10 +716,44 @@ Halo ${ticketDetail.recipient_name},\n\nTransaksi Anda telah berhasil. Berikut d
                 ? `Pembayaran Settlement - Tiket Anda Siap! (Barcode: ${ticketDetail.barcode})`
                 : `Pembayaran Berhasil - Tiket Anda Siap! (Barcode: ${ticketDetail.barcode})`;
 
+              const ticketEmailHTML = `
+<html>
+  <body style="font-family: Arial, sans-serif; margin: 0; padding: 0;">
+    <div style="background-color: #3E2882; padding: 10px 20px; color: white; display: flex; align-items: center;">
+      <img src="${process.env.FRONT_URL}/images/logo-white.png" alt="Celeparty Logo" style="height: 40px;" />
+      <h2 style="margin-left: 15px;">Konfirmasi Pembayaran Tiket</h2>
+    </div>
+    <div style="padding: 20px; color: #333;">
+      <p>Halo ${ticketDetail.recipient_name},</p>
+      <p>Transaksi Anda telah berhasil. Berikut detail tiket Anda:</p>
+      <ul>
+        <li><strong>Status Pembayaran:</strong> ${result.payment_status}</li>
+        <li><strong>Varian:</strong> ${result.variant}</li>
+        <li><strong>Barcode:</strong> ${ticketDetail.barcode}</li>
+        <li><strong>Tanggal Acara:</strong> ${result.event_date}</li>
+        <li><strong>Nama Pemesan:</strong> ${result.customer_name}</li>
+        <li><strong>Telepon:</strong> ${result.telp}</li>
+        <li><strong>Catatan:</strong> ${result.note}</li>
+        <li><strong>Order ID:</strong> ${result.order_id}</li>
+        <li><strong>Email:</strong> ${result.customer_mail}</li>
+        <li><strong>Event Type:</strong> ${result.event_type}</li>
+        <li><strong>Status Tiket:</strong> ${status}</li>
+      </ul>
+      <p>Tiket Anda terlampir dalam bentuk PDF dengan QR code unik.</p>
+      <p>Terima kasih telah menggunakan Celeparty!</p>
+    </div>
+    <div style="background-color: #3E2882; color: white; padding: 10px 20px; font-size: 12px; display: flex; justify-content: space-between;">
+      <div>Contact: support@celeparty.com</div>
+      <div>IG: @celeparty_official | FB: Celeparty</div>
+    </div>
+  </body>
+</html>`;
+
               await strapi.plugin('email').service('email').send({
                 to: ticketDetail.recipient_email,
                 subject: emailSubject,
                 text: emailBody,
+                html: ticketEmailHTML,
                 attachments: [
                   {
                     filename: `ticket-${result.order_id}-${ticketDetail.barcode}.pdf`,
@@ -664,6 +806,39 @@ Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Stat
                 contentType: 'application/pdf',
               },
             ],
+            html: `
+            <html>
+              <body style="font-family: Arial, sans-serif; margin: 0; padding: 0;">
+                <div style="background-color: #3E2882; padding: 10px 20px; color: white; display: flex; align-items: center;">
+                  <img src="${process.env.FRONT_URL}/images/logo-white.png" alt="Celeparty Logo" style="height: 40px;" />
+                  <h2 style="margin-left: 15px;">Konfirmasi Pembayaran Tiket</h2>
+                </div>
+                <div style="padding: 20px; color: #333;">
+                  <p>Halo,</p>
+                  <p>Transaksi Anda telah berhasil. Berikut detail transaksi Anda:</p>
+                  <ul>
+                    <li><strong>Status Pembayaran:</strong> ${result.payment_status}</li>
+                    <li><strong>Varian:</strong> ${result.variant}</li>
+                    <li><strong>Jumlah:</strong> ${result.quantity}</li>
+                    <li><strong>Tanggal Acara:</strong> ${result.event_date}</li>
+                    <li><strong>Nama Pemesan:</strong> ${result.customer_name}</li>
+                    <li><strong>Telepon:</strong> ${result.telp}</li>
+                    <li><strong>Catatan:</strong> ${result.note}</li>
+                    <li><strong>Order ID:</strong> ${result.order_id}</li>
+                    <li><strong>Email:</strong> ${result.customer_mail}</li>
+                    <li><strong>Event Type:</strong> ${result.event_type}</li>
+                    <li><strong>Status Tiket:</strong> ${status}</li>
+                  </ul>
+                  <p>Tiket Anda terlampir dalam bentuk PDF dengan QR code.</p>
+                  <p>Terima kasih telah menggunakan Celeparty!</p>
+                </div>
+                <div style="background-color: #3E2882; color: white; padding: 10px 20px; font-size: 12px; display: flex; justify-content: space-between;">
+                  <div>Contact: support@celeparty.com</div>
+                  <div>IG: @celeparty_official | FB: Celeparty</div>
+                </div>
+              </body>
+            </html>
+            `
           });
 
           strapi.log.info(`Email konfirmasi pembayaran (${result.payment_status}) berhasil dikirim ke ${result.customer_mail} untuk order ${result.order_id}`);
