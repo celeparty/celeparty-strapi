@@ -445,6 +445,61 @@ module.exports = {
       }
     }
     
+    // Send vendor email confirmation if order is event equipment on payment settled
+    if (isSettlement && wasNotSettlement) {
+      try {
+        const equipment = await strapi.entityService.findMany('api::equipment.equipment', {
+          filters: {
+            title: result.product_name
+          },
+          populate: ['users_permissions_user']
+        });
+
+        if (equipment.length > 0) {
+          const equipmentItem = equipment[0];
+          const vendorUser = equipmentItem.users_permissions_user;
+
+          if (vendorUser && vendorUser.email) {
+            const vendorEmail = vendorUser.email;
+
+            const emailSubject = `Konfirmasi Pesanan Baru - ${result.product_name}`;
+            const emailBody = `
+Halo Vendor,
+
+Anda menerima pesanan baru untuk produk peralatan event Anda.
+
+Detail Pesanan:
+- Order ID: ${result.order_id}
+- Produk: ${result.product_name}
+- Jumlah: ${result.quantity}
+- Total Harga: Rp ${parseInt(result.total_price).toLocaleString('id-ID')}
+- Tanggal Event: ${result.event_date}
+- Status Pembayaran: ${result.payment_status}
+
+Silakan cek sistem untuk detail lebih lanjut.
+
+Terima kasih,
+Tim Celeparty
+`;
+
+            await strapi.plugin('email').service('email').send({
+              to: vendorEmail,
+              subject: emailSubject,
+              text: emailBody,
+            });
+
+            strapi.log.info(`Konfirmasi pesanan baru telah dikirim ke email vendor: ${vendorEmail} untuk order ${result.order_id}`);
+          } else {
+            strapi.log.warn(`Vendor tidak memiliki email pada equipment: ${equipmentItem.id}`);
+          }
+        } else {
+          strapi.log.info(`Produk ${result.product_name} bukan peralatan event, tidak mengirim email vendor.`);
+        }
+      } catch (emailError) {
+        strapi.log.error(`Gagal mengirim email konfirmasi ke vendor untuk order ${result.order_id}:`, emailError);
+      }
+    }
+    
     console.log('Is settlement:', isSettlement);
     console.log('Was not settlement:', wasNotSettlement);
     console.log('Has customer mail:', !!result.customer_mail);
