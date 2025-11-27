@@ -31,9 +31,6 @@
       "required": true,
       "default": 1
     },
-    "minimal_order_date": {
-      "type": "date"
-    },
     "variant": {
       "type": "component",
       "repeatable": true,
@@ -123,9 +120,7 @@
     "kota_event": {
       "type": "string"
     },
-    "maximal_order_date": {
-      "type": "date"
-    },
+
     "terms_conditions": {
       "type": "customField",
       "options": {

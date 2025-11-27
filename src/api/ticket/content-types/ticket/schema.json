@@ -124,8 +124,11 @@
     "kota_event": {
       "type": "string"
     },
-    "maximal_order_date": {
+    "end_date": {
       "type": "date"
+    },
+    "end_time": {
+      "type": "string"
     }
   }
 }
