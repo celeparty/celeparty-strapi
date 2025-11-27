@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "log-histories",
+  "info": {
+    "singularName": "log-history",
+    "pluralName": "log-histories",
+    "displayName": "Log History",
+    "description": "Activity log for all website activities"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "action": {
+      "type": "string",
+      "required": true
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "timestamp": {
+      "type": "datetime",
+      "required": true,
+      "default": "now()"
+    },
+    "details": {
+      "type": "text"
+    },
+    "entity_type": {
+      "type": "string"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "text"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "success",
+        "failed",
+        "warning"
+      ],
+      "default": "success"
+    }
+  }
+}

@@ -62,11 +62,6 @@
       },
       "customField": "plugin::ckeditor5.CKEditor"
     },
-    "main_price": {
-      "type": "integer",
-      "default": 0,
-      "required": true
-    },
     "rate": {
       "type": "decimal",
       "default": 5
@@ -77,16 +72,6 @@
     },
     "region": {
       "type": "string"
-    },
-    "price_min": {
-      "type": "decimal",
-      "required": true,
-      "default": 0
-    },
-    "price_max": {
-      "type": "decimal",
-      "default": 0,
-      "required": true
     },
     "sold_count": {
       "type": "integer",
