@@ -4,18 +4,120 @@
   "info": {
     "singularName": "ticket-detail",
     "pluralName": "ticket-details",
-    "displayName": "ticket-detail",
-    "description": ""
+    "displayName": "Ticket Detail",
+    "description": "Individual ticket records with unique token, QR code, and verification status"
   },
-  
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
+    "ticket": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ticket.ticket",
+      "inversedBy": "ticket_details"
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product"
+    },
+    "variant": {
+      "type": "string",
+      "required": false,
+      "description": "Variant name/id if ticket is for specific product variant"
+    },
+    "ticket_code": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "description": "Generated unique ticket code (e.g., TK-20240101-0001)"
+    },
+    "unique_token": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "description": "Unique token for QR code generation and verification"
+    },
+    "qr_code": {
+      "type": "text",
+      "description": "Base64 encoded QR code image"
+    },
+    "qr_code_encrypted": {
+      "type": "text",
+      "description": "Encrypted unique_token for additional security"
+    },
+    "verification_status": {
+      "type": "enumeration",
+      "enum": [
+        "unused",
+        "verified",
+        "invalid",
+        "duplicate"
+      ],
+      "default": "unused",
+      "description": "Status of ticket verification"
+    },
+    "payment_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "paid",
+        "refunded",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Payment status of ticket"
+    },
+    "buyer_email": {
+      "type": "email",
+      "required": true,
+      "description": "Email of ticket buyer"
+    },
+    "buyer_phone": {
+      "type": "string",
+      "required": true,
+      "description": "Phone number of ticket buyer"
+    },
+    "buyer_name": {
+      "type": "string",
+      "required": true,
+      "description": "Name of ticket buyer"
+    },
+    "verified_at": {
+      "type": "datetime",
+      "description": "Timestamp when ticket was verified"
+    },
+    "verified_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "description": "Admin/staff who verified the ticket"
+    },
+    "notes": {
+      "type": "text",
+      "description": "Additional notes about ticket (e.g., refund reason)"
+    },
+    "is_bypass": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if ticket is created without payment (bypass/send invitation)"
+    },
+    "bypass_created_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "description": "Vendor who created this bypass ticket"
+    },
+    "bypass_created_at": {
+      "type": "datetime",
+      "description": "When bypass ticket was created"
+    },
     "recipient_name": {
       "type": "string",
-      "required": true
+      "required": false,
+      "description": "[Legacy] Recipient name"
     },
     "identity_type": {
       "type": "enumeration",
@@ -24,24 +126,29 @@
         "SIM",
         "Lainnya"
       ],
-      "required": true
+      "required": false,
+      "description": "[Legacy] Identity type"
     },
     "identity_number": {
       "type": "string",
-      "required": true
+      "required": false,
+      "description": "[Legacy] Identity number"
     },
     "whatsapp_number": {
       "type": "string",
-      "required": true
+      "required": false,
+      "description": "[Legacy] WhatsApp number"
     },
     "recipient_email": {
       "type": "email",
-      "required": true
+      "required": false,
+      "description": "[Legacy] Recipient email"
     },
     "barcode": {
       "type": "string",
-      "unique": true,
-      "required": true
+      "unique": false,
+      "required": false,
+      "description": "[Legacy] Barcode"
     },
     "status": {
       "type": "enumeration",
@@ -50,8 +157,8 @@
         "used",
         "cancelled"
       ],
-      "default": "active",
-      "required": true
+      "required": false,
+      "description": "[Legacy] Status - use verification_status instead"
     },
     "transaction_ticket": {
       "type": "relation",

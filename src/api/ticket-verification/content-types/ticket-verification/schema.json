@@ -1,0 +1,82 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ticket_verifications",
+  "info": {
+    "singularName": "ticket-verification",
+    "pluralName": "ticket-verifications",
+    "displayName": "Ticket Verification",
+    "description": "Log of ticket verification events"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ticket_detail": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ticket-detail.ticket-detail",
+      "description": "Ticket that was verified"
+    },
+    "ticket_code": {
+      "type": "string",
+      "required": true,
+      "description": "Ticket code for quick reference"
+    },
+    "verification_type": {
+      "type": "enumeration",
+      "enum": [
+        "scanned",
+        "manual",
+        "bulk_verify"
+      ],
+      "required": true,
+      "description": "Type of verification performed"
+    },
+    "verified_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "ticket_verifications",
+      "description": "User who verified the ticket"
+    },
+    "verified_at": {
+      "type": "datetime",
+      "required": true,
+      "description": "When the verification occurred"
+    },
+    "result": {
+      "type": "enumeration",
+      "enum": [
+        "success",
+        "failed",
+        "duplicate",
+        "invalid"
+      ],
+      "required": true,
+      "description": "Result of verification attempt"
+    },
+    "failure_reason": {
+      "type": "string",
+      "description": "If failed, reason for failure"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of verification source"
+    },
+    "device_info": {
+      "type": "text",
+      "description": "Device/browser information"
+    },
+    "notes": {
+      "type": "text",
+      "description": "Additional notes about verification"
+    },
+    "created_at": {
+      "type": "datetime"
+    },
+    "updated_at": {
+      "type": "datetime"
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ticket_send_histories",
+  "info": {
+    "singularName": "ticket-send-history",
+    "pluralName": "ticket-send-histories",
+    "displayName": "Ticket Send History",
+    "description": "Log of ticket sending/invitation events"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ticket": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ticket.ticket",
+      "description": "Ticket being sent"
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product",
+      "description": "Product associated with tickets"
+    },
+    "variant": {
+      "type": "string",
+      "description": "Product variant name"
+    },
+    "sent_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "description": "Vendor who sent the invitation"
+    },
+    "recipient_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of recipients in this send"
+    },
+    "successful_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of successful email deliveries"
+    },
+    "failed_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "Number of failed email deliveries"
+    },
+    "recipients": {
+      "type": "json",
+      "description": "Array of recipient objects with name, email, phone, identity details"
+    },
+    "message": {
+      "type": "text",
+      "description": "Message sent with tickets"
+    },
+    "sent_at": {
+      "type": "datetime",
+      "required": true,
+      "description": "When tickets were sent"
+    },
+    "email_template": {
+      "type": "string",
+      "description": "Email template used"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "sent",
+        "partially_sent",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Overall status of send operation"
+    },
+    "error_log": {
+      "type": "text",
+      "description": "Error details if send failed"
+    },
+    "created_at": {
+      "type": "datetime"
+    },
+    "updated_at": {
+      "type": "datetime"
+    }
+  }
+}

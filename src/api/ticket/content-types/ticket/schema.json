@@ -114,6 +114,13 @@
     },
     "end_time": {
       "type": "string"
+    },
+    "ticket_details": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ticket-detail.ticket-detail",
+      "mappedBy": "ticket",
+      "description": "Individual ticket records for this ticket product"
     }
   }
 }
