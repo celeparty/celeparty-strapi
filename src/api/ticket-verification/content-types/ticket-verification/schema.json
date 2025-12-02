@@ -37,7 +37,6 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "ticket_verifications",
       "description": "User who verified the ticket"
     },
     "verified_at": {
