@@ -5,10 +5,8 @@
  */
 
 const { createCoreController } = require('@strapi/strapi').factories;
-const QRCode = require('qrcode');
-const PDFDocument = require('pdfkit');
-const { Readable } = require('stream');
 const crypto = require('crypto');
+const { generateProfessionalTicketPDF } = require('../utils/generateProfessionalTicketPDF');
 
 function getTicketStatus(eventDate) {
   const today = new Date();
@@ -20,53 +18,6 @@ function getTicketStatus(eventDate) {
 
 function generateUniqueBarcode() {
   return crypto.randomBytes(16).toString('hex').toUpperCase();
-}
-
-async function generateTicketPDF({ url, transaction, status, recipientName, recipientEmail, barcode }) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Generate QR code as data URL
-      const qrDataUrl = await QRCode.toDataURL(url);
-      // Extract base64 from data URL
-      const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, "");
-      // Create PDF
-      const doc = new PDFDocument();
-      const buffers = [];
-      doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => {
-        const pdfData = Buffer.concat(buffers);
-        resolve(pdfData);
-      });
-      doc.fontSize(18).text('E-Ticket Celeparty', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(12).text(`Order ID: ${transaction.order_id}`);
-      doc.text(`Nama Pemesan: ${transaction.customer_name}`);
-      doc.text(`Email: ${transaction.customer_mail}`);
-      doc.text(`Nama Penerima: ${recipientName}`);
-      doc.text(`Email Penerima: ${recipientEmail}`);
-      doc.text(`Barcode: ${barcode}`);
-      doc.text(`Nama Event: ${transaction.product_name || 'N/A'}`);
-      doc.text(`Event Type: Ticket`);
-      doc.text(`Tanggal Acara: ${transaction.event_date}`);
-      doc.text(`Varian: ${transaction.variant}`);
-      doc.text(`Status Tiket: ${status}`);
-      doc.moveDown();
-      doc.text('Scan QR code di bawah ini untuk verifikasi tiket:', { align: 'center' });
-      doc.moveDown();
-      // Insert QR code image
-      doc.image(Buffer.from(qrBase64, 'base64'), {
-        fit: [200, 200],
-        align: 'center',
-        valign: 'center',
-      });
-      doc.text('Harap tidak membagikan barcode ini ke pihak lain.', { align: 'center' });
-      doc.text('Setiap tiket memiliki barcode unik.', { align: 'center' });
-
-      doc.end();
-    } catch (err) {
-      reject(err);
-    }
-  });
 }
 
 async function generateInvoicePDF({ transaction, ticketDetails }) {
@@ -247,13 +198,11 @@ module.exports = createCoreController('api::transaction-ticket.transaction-ticke
         const qrUrl = `${baseUrl}?${params}`;
 
         const status = getTicketStatus(transaction.event_date);
-        const pdfBuffer = await generateTicketPDF({
-          url: qrUrl,
+        const pdfBuffer = await generateProfessionalTicketPDF({
           transaction: transaction,
-          status,
-          recipientName: ticketDetail.recipient_name,
-          recipientEmail: ticketDetail.recipient_email,
-          barcode: ticketDetail.barcode
+          ticketDetail: ticketDetail,
+          qrUrl: qrUrl,
+          status: status
         });
 
         const emailBody = `

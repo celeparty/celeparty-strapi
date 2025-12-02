@@ -2,6 +2,9 @@ const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
 const { Readable } = require('stream');
 const crypto = require('crypto');
+const { generateProfessionalTicketPDF } = require('../../utils/generateProfessionalTicketPDF');
+const fs = require('fs');
+const path = require('path');
 
 async function generateInvoicePDF({ transaction, ticketDetails }) {
   return new Promise(async (resolve, reject) => {
@@ -125,82 +128,6 @@ function getTicketStatus(eventDate) {
 
 function generateUniqueBarcode() {
   return crypto.randomBytes(16).toString('hex').toUpperCase();
-}
-
-const path = require('path');
-const fs = require('fs');
-
-async function generateTicketPDF({ url, transaction, status, recipientName, recipientEmail, barcode }) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const logoPath = path.resolve(__dirname, '../../../../public/images/logo-white.png');
-      const logoExists = fs.existsSync(logoPath);
-
-      // Generate QR code as data URL
-      const qrDataUrl = await QRCode.toDataURL(url);
-      // Extract base64 from data URL
-      const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, "");
-      // Create PDF
-      const doc = new PDFDocument({ margin: 50 });
-      const buffers = [];
-      doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => {
-        const pdfData = Buffer.concat(buffers);
-        resolve(pdfData);
-      });
-
-      // Header with colored background and logo
-      doc.rect(0, 0, doc.page.width, 70).fill('#3E2882'); // Use c-blue from tailwind.config.js
-      if (logoExists) {
-        doc.image(logoPath, 50, 15, { width: 100 });
-      }
-      doc.fillColor('white').fontSize(20).text('Celeparty E-Ticket', 160, 25, { align: 'left' });
-
-      doc.moveDown(3);
-
-      doc.fillColor('black').fontSize(12);
-      doc.text(`Order ID: ${transaction.order_id}`);
-      doc.text(`Nama Pemesan: ${transaction.customer_name}`);
-      doc.text(`Email: ${transaction.customer_mail}`);
-      doc.text(`Nama Penerima: ${recipientName}`);
-      doc.text(`Email Penerima: ${recipientEmail}`);
-      doc.text(`Barcode: ${barcode}`);
-      doc.text(`Nama Event: ${transaction.product_name || 'N/A'}`);
-      doc.text(`Event Type: Ticket`);
-      doc.text(`Tanggal Acara: ${transaction.event_date}`);
-      doc.text(`Varian: ${transaction.variant}`);
-      doc.text(`Status Tiket: ${status}`);
-
-      doc.moveDown();
-
-      doc.text('Scan QR code di bawah ini untuk verifikasi tiket:', { align: 'center' });
-      doc.moveDown();
-
-      // Insert QR code image
-      doc.image(Buffer.from(qrBase64, 'base64'), {
-        fit: [200, 200],
-        align: 'center',
-        valign: 'center',
-      });
-
-      doc.moveDown();
-
-      doc.text('Harap tidak membagikan barcode ini ke pihak lain.', { align: 'center' });
-      doc.text('Setiap tiket memiliki barcode unik.', { align: 'center' });
-
-      // Footer
-      const footerY = doc.page.height - 50;
-      doc.rect(0, footerY - 10, doc.page.width, 50).fill('#3E2882');
-      const dateStr = `Tanggal dibuat: ${new Date().toLocaleDateString('id-ID')}`;
-      doc.fillColor('white').fontSize(10).text(dateStr, 50, footerY, { align: 'left' });
-      const contactInfo = 'Contact: support@celeparty.com | IG: @celeparty_official | FB: Celeparty';
-      doc.fillColor('white').fontSize(10).text(contactInfo, -50, footerY, { align: 'right' });  // -50 to offset right edge
-
-      doc.end();
-    } catch (err) {
-      reject(err);
-    }
-  });
 }
 
 module.exports = {
@@ -700,13 +627,11 @@ Terima kasih telah menggunakan Celeparty!`;
               const qrUrl = `${baseUrl}?${params}`;
 
               const status = getTicketStatus(result.event_date);
-              const pdfBuffer = await generateTicketPDF({
-                url: qrUrl,
+              const pdfBuffer = await generateProfessionalTicketPDF({
                 transaction: result,
-                status,
-                recipientName: ticketDetail.recipient_name,
-                recipientEmail: ticketDetail.recipient_email,
-                barcode: ticketDetail.barcode
+                ticketDetail: ticketDetail,
+                qrUrl: qrUrl,
+                status: status
               });
 
               const emailBody = `
@@ -779,13 +704,18 @@ Halo ${ticketDetail.recipient_name},\n\nTransaksi Anda telah berhasil. Berikut d
           const qrUrl = `${baseUrl}?${params}`;
 
           const status = getTicketStatus(result.event_date);
-          const pdfBuffer = await generateTicketPDF({
-            url: qrUrl,
+          const pdfBuffer = await generateProfessionalTicketPDF({
             transaction: result,
-            status,
-            recipientName: result.customer_name,
-            recipientEmail: result.customer_mail,
-            barcode: result.order_id
+            ticketDetail: {
+              recipient_name: result.customer_name,
+              recipient_email: result.customer_mail,
+              barcode: result.order_id,
+              whatsapp_number: result.telp,
+              identity_type: 'KTP',
+              identity_number: '-'
+            },
+            qrUrl: qrUrl,
+            status: status
           });
 
           const emailBody = `

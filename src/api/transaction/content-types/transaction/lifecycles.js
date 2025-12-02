@@ -1,6 +1,4 @@
-const QRCode = require('qrcode');
-const PDFDocument = require('pdfkit');
-const { Readable } = require('stream');
+const { generateProfessionalTicketPDF } = require('../../transaction-ticket/utils/generateProfessionalTicketPDF');
 
 function getTicketStatus(eventDate) {
   const today = new Date();
@@ -8,47 +6,6 @@ function getTicketStatus(eventDate) {
   today.setHours(0,0,0,0);
   event.setHours(0,0,0,0);
   return today <= event ? 'active' : 'not active';
-}
-
-async function generateTicketPDF({ url, transaction, status }) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Generate QR code as data URL
-      const qrDataUrl = await QRCode.toDataURL(url);
-      // Extract base64 from data URL
-      const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, "");
-      // Create PDF
-      const doc = new PDFDocument();
-      const buffers = [];
-      doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => {
-        const pdfData = Buffer.concat(buffers);
-        resolve(pdfData);
-      });
-      doc.fontSize(18).text('E-Ticket Celeparty', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(12).text(`Order ID: ${transaction.order_id}`);
-      doc.text(`Nama Pemesan: ${transaction.customer_name}`);
-      doc.text(`Email: ${transaction.email}`);
-      doc.text(`Event Type: ${transaction.event_type}`);
-      doc.text(`Varian: ${transaction.variant}`);
-      doc.text(`Quantity: ${transaction.quantity}`);
-      doc.text(`Tanggal Acara: ${transaction.event_date}`);
-      doc.text(`Status Tiket: ${status}`);
-      doc.moveDown();
-      doc.text('Scan QR code di bawah ini untuk verifikasi tiket:', { align: 'center' });
-      doc.moveDown();
-      // Insert QR code image
-      doc.image(Buffer.from(qrBase64, 'base64'), {
-        fit: [200, 200],
-        align: 'center',
-        valign: 'center',
-      });
-      doc.end();
-    } catch (err) {
-      reject(err);
-    }
-  });
 }
 
 module.exports = {
@@ -68,10 +25,21 @@ module.exports = {
           quantity: result.quantity,
         }).toString();
         const qrUrl = `${baseUrl}?${params}`;
-        // Determine ticket status
-        const status = getTicketStatus(result.event_date);
         // Generate PDF with QR code
-        const pdfBuffer = await generateTicketPDF({ url: qrUrl, transaction: result, status });
+        const status = getTicketStatus(result.event_date);
+        const pdfBuffer = await generateProfessionalTicketPDF({
+          transaction: result,
+          ticketDetail: {
+            recipient_name: result.customer_name,
+            recipient_email: result.email,
+            barcode: result.order_id,
+            whatsapp_number: result.telp,
+            identity_type: 'KTP',
+            identity_number: '-'
+          },
+          qrUrl: qrUrl,
+          status: status
+        });
         // Build email body (plain text fallback)
         const emailBody = `
 Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Status Pembayaran: ${result.payment_status}\n- Varian: ${result.variant}\n- Jumlah: ${result.quantity}\n- Tanggal Acara: ${result.event_date}\n- Nama Pemesan: ${result.customer_name}\n- Telepon: ${result.telp}\n- Catatan: ${result.note}\n- Order ID: ${result.order_id}\n- Email: ${result.email}\n- Event Type: ${result.event_type}\n- Status Tiket: ${status}\n\nTiket Anda terlampir dalam bentuk PDF dengan QR code.\n\nTerima kasih telah menggunakan Celeparty!`;
