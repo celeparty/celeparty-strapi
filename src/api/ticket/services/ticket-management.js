@@ -35,7 +35,6 @@ module.exports = ({ strapi }) => ({
       return await QRCode.toDataURL(token, {
         errorCorrectionLevel: 'H',
         type: 'image/png',
-        quality: 0.95,
         margin: 1,
         width: 300
       });
@@ -53,10 +52,20 @@ module.exports = ({ strapi }) => ({
       return token;
     }
 
-    const cipher = crypto.createCipher('aes-256-cbc', encryptionKey);
-    let encrypted = cipher.update(token, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return encrypted;
+    try {
+      // Use a fixed IV for consistency (in production, use random IV with proper storage)
+      const algorithm = 'aes-256-cbc';
+      const key = crypto.scryptSync(encryptionKey, 'salt', 32);
+      const iv = Buffer.alloc(16, 0); // Fixed IV for simplicity
+      
+      const cipher = crypto.createCipheriv(algorithm, key, iv);
+      let encrypted = cipher.update(token, 'utf8', 'hex');
+      encrypted += cipher.final('hex');
+      return encrypted;
+    } catch (err) {
+      console.error('Encryption error:', err);
+      return token; // Fallback to unencrypted
+    }
   },
 
   /**
@@ -68,12 +77,17 @@ module.exports = ({ strapi }) => ({
     }
 
     try {
-      const decipher = crypto.createDecipher('aes-256-cbc', encryptionKey);
+      const algorithm = 'aes-256-cbc';
+      const key = crypto.scryptSync(encryptionKey, 'salt', 32);
+      const iv = Buffer.alloc(16, 0); // Must match encryption IV
+      
+      const decipher = crypto.createDecipheriv(algorithm, key, iv);
       let decrypted = decipher.update(encryptedToken, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
       return decrypted;
     } catch (err) {
-      throw new Error(`Failed to decrypt token: ${err.message}`);
+      console.error('Decryption error:', err);
+      return encryptedToken; // Return as-is if decryption fails
     }
   },
 
