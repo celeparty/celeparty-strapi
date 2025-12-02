@@ -26,11 +26,6 @@
       "relation": "oneToOne",
       "target": "api::category.category"
     },
-    "minimal_order": {
-      "type": "integer",
-      "required": true,
-      "default": 1
-    },
     "variant": {
       "type": "component",
       "repeatable": true,
@@ -46,36 +41,44 @@
       "type": "media",
       "multiple": true,
       "required": true,
-      "allowedTypes": [
-        "images",
-        "files"
-      ]
+      "allowedTypes": ["images", "files"]
     },
     "description": {
       "type": "customField",
-      "options": {
-        "preset": "default"
-      },
+      "options": { "preset": "default" },
       "customField": "plugin::ckeditor5.CKEditor"
     },
     "rate": {
       "type": "decimal",
       "default": 5
     },
-    "kabupaten": {
-      "type": "string",
-      "required": false
-    },
-    "region": {
+    "kabupaten": { "type": "string" },
+    "region": { "type": "string" },
+    "lokasi_event": {
       "type": "string"
     },
+    "kota_event": {
+      "type": "string"
+    },
+    "event_date": {
+      "type": "date"
+    },
+    "waktu_event": {
+      "type": "string"
+    },
+    "end_date": {
+      "type": "date"
+    },
+    "end_time": {
+      "type": "string"
+    },
+
     "terms_conditions": {
       "type": "customField",
-      "options": {
-        "preset": "default"
-      },
+      "options": { "preset": "default" },
       "customField": "plugin::ckeditor5.CKEditor"
     },
+
     "sold_count": {
       "type": "integer",
       "default": 0
@@ -92,33 +95,8 @@
     },
     "state": {
       "type": "enumeration",
-      "enum": [
-        "pending",
-        "rejected",
-        "approved"
-      ],
+      "enum": ["pending", "rejected", "approved"],
       "default": "pending"
-    },
-    "event_date": {
-      "type": "date",
-      "required": false
-    },
-    "waktu_event": {
-      "type": "string"
-    },
-    "lokasi_event": {
-      "type": "string"
-    },
-    "kota_event": {
-      "type": "string"
-    },
-
-    "terms_conditions": {
-      "type": "customField",
-      "options": {
-        "preset": "default"
-      },
-      "customField": "plugin::ckeditor5.CKEditor"
     }
   }
 }
