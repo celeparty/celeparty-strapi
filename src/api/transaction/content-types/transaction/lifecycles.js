@@ -1,4 +1,4 @@
-const { generateProfessionalTicketPDF } = require('../../transaction-ticket/utils/generateProfessionalTicketPDF');
+const { generateProfessionalTicketPDF } = require('../../../transaction-ticket/utils/generateProfessionalTicketPDF');
 
 function getTicketStatus(eventDate) {
   const today = new Date();

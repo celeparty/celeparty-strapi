@@ -70,12 +70,6 @@
     "notes": {
       "type": "text",
       "description": "Additional notes about verification"
-    },
-    "created_at": {
-      "type": "datetime"
-    },
-    "updated_at": {
-      "type": "datetime"
     }
   }
 }

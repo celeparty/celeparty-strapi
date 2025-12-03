@@ -477,13 +477,13 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiProductProduct extends Struct.CollectionTypeSchema {
-  collectionName: 'products';
+export interface ApiEquipmentEquipment extends Struct.CollectionTypeSchema {
+  collectionName: 'equipments';
   info: {
-    description: '';
-    displayName: 'product';
-    pluralName: 'products';
-    singularName: 'product';
+    description: 'Equipment products for events';
+    displayName: 'equipment';
+    pluralName: 'equipments';
+    singularName: 'equipment';
   };
   options: {
     draftAndPublish: true;
@@ -508,7 +508,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::product.product'
+      'api::equipment.equipment'
     > &
       Schema.Attribute.Private;
     lokasi_event: Schema.Attribute.String;
@@ -534,6 +534,124 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     sold_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     state: Schema.Attribute.Enumeration<['pending', 'rejected', 'approved']> &
       Schema.Attribute.DefaultTo<'pending'>;
+    terms_conditions: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'default';
+        }
+      >;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    users_permissions_user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    variant: Schema.Attribute.Component<
+      'variant-product.variant-product',
+      true
+    >;
+    waktu_event: Schema.Attribute.String;
+  };
+}
+
+export interface ApiLogHistoryLogHistory extends Struct.CollectionTypeSchema {
+  collectionName: 'log-histories';
+  info: {
+    description: 'Activity log for all website activities';
+    displayName: 'Log History';
+    pluralName: 'log-histories';
+    singularName: 'log-history';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    action: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    details: Schema.Attribute.Text;
+    entity_id: Schema.Attribute.String;
+    entity_type: Schema.Attribute.String;
+    ip_address: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::log-history.log-history'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['success', 'failed', 'warning']> &
+      Schema.Attribute.DefaultTo<'success'>;
+    timestamp: Schema.Attribute.DateTime &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'now()'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user_agent: Schema.Attribute.Text;
+    users_permissions_user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiProductProduct extends Struct.CollectionTypeSchema {
+  collectionName: 'products';
+  info: {
+    description: '';
+    displayName: 'product';
+    pluralName: 'products';
+    singularName: 'product';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    blogs: Schema.Attribute.Relation<'manyToMany', 'api::blog.blog'>;
+    category: Schema.Attribute.Relation<'oneToOne', 'api::category.category'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'default';
+        }
+      >;
+    end_date: Schema.Attribute.Date;
+    end_time: Schema.Attribute.String;
+    escrow: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    event_date: Schema.Attribute.Date;
+    kabupaten: Schema.Attribute.String;
+    kota_event: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::product.product'
+    > &
+      Schema.Attribute.Private;
+    lokasi_event: Schema.Attribute.String;
+    main_image: Schema.Attribute.Media<'images' | 'files', true> &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    rate: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<5>;
+    region: Schema.Attribute.String;
+    sold_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    state: Schema.Attribute.Enumeration<['pending', 'rejected', 'approved']> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    terms_conditions: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'default';
+        }
+      >;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -542,6 +660,255 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::user-event-type.user-event-type'
     >;
+    users_permissions_user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    variant: Schema.Attribute.Component<
+      'variant-product.variant-product',
+      true
+    >;
+    waktu_event: Schema.Attribute.String;
+  };
+}
+
+export interface ApiTicketDetailTicketDetail
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ticket_details';
+  info: {
+    description: '';
+    displayName: 'ticket-detail';
+    pluralName: 'ticket-details';
+    singularName: 'ticket-detail';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    barcode: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    buyer_email: Schema.Attribute.Email & Schema.Attribute.Required;
+    buyer_name: Schema.Attribute.String & Schema.Attribute.Required;
+    buyer_phone: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    identity_number: Schema.Attribute.String & Schema.Attribute.Required;
+    identity_type: Schema.Attribute.Enumeration<['KTP', 'SIM', 'Lainnya']> &
+      Schema.Attribute.Required;
+    is_bypass: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ticket-detail.ticket-detail'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    payment_status: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'refunded', 'cancelled']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    qr_code: Schema.Attribute.Text;
+    qr_code_encrypted: Schema.Attribute.Text;
+    recipient_email: Schema.Attribute.Email & Schema.Attribute.Required;
+    recipient_name: Schema.Attribute.String & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<['active', 'used', 'cancelled']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'active'>;
+    ticket: Schema.Attribute.Relation<'manyToOne', 'api::ticket.ticket'>;
+    ticket_code: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    transaction_ticket: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::transaction-ticket.transaction-ticket'
+    >;
+    unique_token: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    variant: Schema.Attribute.String;
+    verification_status: Schema.Attribute.Enumeration<
+      ['unused', 'verified', 'invalid', 'duplicate']
+    > &
+      Schema.Attribute.DefaultTo<'unused'>;
+    verified_at: Schema.Attribute.DateTime;
+    verified_by: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    whatsapp_number: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface ApiTicketSendHistoryTicketSendHistory
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ticket_send_histories';
+  info: {
+    description: 'Log of ticket sending/invitation events';
+    displayName: 'Ticket Send History';
+    pluralName: 'ticket-send-histories';
+    singularName: 'ticket-send-history';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email_template: Schema.Attribute.String;
+    error_log: Schema.Attribute.Text;
+    failed_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ticket-send-history.ticket-send-history'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    recipient_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    recipients: Schema.Attribute.JSON;
+    sent_at: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    sent_by: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'sent', 'partially_sent', 'failed']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    successful_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    ticket: Schema.Attribute.Relation<'manyToOne', 'api::ticket.ticket'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    variant: Schema.Attribute.String;
+  };
+}
+
+export interface ApiTicketVerificationTicketVerification
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'ticket_verifications';
+  info: {
+    description: 'Log of ticket verification events';
+    displayName: 'Ticket Verification';
+    pluralName: 'ticket-verifications';
+    singularName: 'ticket-verification';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    device_info: Schema.Attribute.Text;
+    failure_reason: Schema.Attribute.String;
+    ip_address: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ticket-verification.ticket-verification'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    result: Schema.Attribute.Enumeration<
+      ['success', 'failed', 'duplicate', 'invalid']
+    > &
+      Schema.Attribute.Required;
+    ticket_code: Schema.Attribute.String & Schema.Attribute.Required;
+    ticket_detail: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::ticket-detail.ticket-detail'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    verification_type: Schema.Attribute.Enumeration<
+      ['scanned', 'manual', 'bulk_verify']
+    > &
+      Schema.Attribute.Required;
+    verified_at: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    verified_by: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiTicketTicket extends Struct.CollectionTypeSchema {
+  collectionName: 'tickets';
+  info: {
+    description: 'Ticket products for events';
+    displayName: 'ticket';
+    pluralName: 'tickets';
+    singularName: 'ticket';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    blogs: Schema.Attribute.Relation<'manyToMany', 'api::blog.blog'>;
+    category: Schema.Attribute.Relation<'oneToOne', 'api::category.category'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'default';
+        }
+      >;
+    end_date: Schema.Attribute.Date;
+    end_time: Schema.Attribute.String;
+    escrow: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    event_date: Schema.Attribute.Date;
+    kabupaten: Schema.Attribute.String;
+    kota_event: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ticket.ticket'
+    > &
+      Schema.Attribute.Private;
+    lokasi_event: Schema.Attribute.String;
+    main_image: Schema.Attribute.Media<'images' | 'files', true> &
+      Schema.Attribute.Required;
+    minimal_order: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<1>;
+    minimal_order_date: Schema.Attribute.Date;
+    publishedAt: Schema.Attribute.DateTime;
+    rate: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<5>;
+    region: Schema.Attribute.String;
+    sold_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    state: Schema.Attribute.Enumeration<['pending', 'rejected', 'approved']> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    terms_conditions: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'default';
+        }
+      >;
+    ticket_details: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ticket-detail.ticket-detail'
+    >;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
     users_permissions_user: Schema.Attribute.Relation<
       'oneToOne',
       'plugin::users-permissions.user'
@@ -564,7 +931,7 @@ export interface ApiTransactionTicketTransactionTicket
     singularName: 'transaction-ticket';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -587,7 +954,12 @@ export interface ApiTransactionTicketTransactionTicket
     product_name: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.String;
+    recipients: Schema.Attribute.JSON;
     telp: Schema.Attribute.String;
+    ticket_details: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ticket-detail.ticket-detail'
+    >;
     total_price: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1209,7 +1581,13 @@ declare module '@strapi/strapi' {
       'api::banner.banner': ApiBannerBanner;
       'api::blog.blog': ApiBlogBlog;
       'api::category.category': ApiCategoryCategory;
+      'api::equipment.equipment': ApiEquipmentEquipment;
+      'api::log-history.log-history': ApiLogHistoryLogHistory;
       'api::product.product': ApiProductProduct;
+      'api::ticket-detail.ticket-detail': ApiTicketDetailTicketDetail;
+      'api::ticket-send-history.ticket-send-history': ApiTicketSendHistoryTicketSendHistory;
+      'api::ticket-verification.ticket-verification': ApiTicketVerificationTicketVerification;
+      'api::ticket.ticket': ApiTicketTicket;
       'api::transaction-ticket.transaction-ticket': ApiTransactionTicketTransactionTicket;
       'api::transaction.transaction': ApiTransactionTransaction;
       'api::user-event-type.user-event-type': ApiUserEventTypeUserEventType;

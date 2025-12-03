@@ -8,7 +8,7 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -56,9 +56,6 @@
       "default": false
     },
     "vendor_id": {
-      "type": "string"
-    },
-    "event_type": {
       "type": "string"
     },
     "recipients": {

@@ -80,12 +80,6 @@
     "error_log": {
       "type": "text",
       "description": "Error details if send failed"
-    },
-    "created_at": {
-      "type": "datetime"
-    },
-    "updated_at": {
-      "type": "datetime"
     }
   }
 }

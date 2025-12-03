@@ -4,11 +4,12 @@
   "info": {
     "singularName": "ticket-detail",
     "pluralName": "ticket-details",
-    "displayName": "Ticket Detail",
-    "description": "Individual ticket records with unique token, QR code, and verification status"
+    "displayName": "ticket-detail",
+    "description": ""
   },
+  
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
@@ -104,20 +105,9 @@
       "default": false,
       "description": "True if ticket is created without payment (bypass/send invitation)"
     },
-    "bypass_created_by": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "description": "Vendor who created this bypass ticket"
-    },
-    "bypass_created_at": {
-      "type": "datetime",
-      "description": "When bypass ticket was created"
-    },
     "recipient_name": {
       "type": "string",
-      "required": false,
-      "description": "[Legacy] Recipient name"
+      "required": true
     },
     "identity_type": {
       "type": "enumeration",
@@ -126,29 +116,24 @@
         "SIM",
         "Lainnya"
       ],
-      "required": false,
-      "description": "[Legacy] Identity type"
+      "required": true
     },
     "identity_number": {
       "type": "string",
-      "required": false,
-      "description": "[Legacy] Identity number"
+      "required": true
     },
     "whatsapp_number": {
       "type": "string",
-      "required": false,
-      "description": "[Legacy] WhatsApp number"
+      "required": true
     },
     "recipient_email": {
       "type": "email",
-      "required": false,
-      "description": "[Legacy] Recipient email"
+      "required": true
     },
     "barcode": {
       "type": "string",
-      "unique": false,
-      "required": false,
-      "description": "[Legacy] Barcode"
+      "unique": true,
+      "required": true
     },
     "status": {
       "type": "enumeration",
@@ -157,8 +142,8 @@
         "used",
         "cancelled"
       ],
-      "required": false,
-      "description": "[Legacy] Status - use verification_status instead"
+      "default": "active",
+      "required": true
     },
     "transaction_ticket": {
       "type": "relation",
