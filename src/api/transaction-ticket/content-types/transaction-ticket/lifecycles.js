@@ -2,9 +2,9 @@ const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
 const { Readable } = require('stream');
 const crypto = require('crypto');
-const { generateProfessionalTicketPDF } = require('../../utils/generateProfessionalTicketPDF');
-const fs = require('fs');
 const path = require('path');
+const { generateProfessionalTicketPDF } = require(path.join(__dirname, '../../utils/generateProfessionalTicketPDF'));
+const fs = require('fs');
 
 async function generateInvoicePDF({ transaction, ticketDetails }) {
   return new Promise(async (resolve, reject) => {

@@ -1,4 +1,5 @@
-const { generateProfessionalTicketPDF } = require('../../../transaction-ticket/utils/generateProfessionalTicketPDF');
+const path = require('path');
+const { generateProfessionalTicketPDF } = require(path.join(__dirname, '../../transaction-ticket/utils/generateProfessionalTicketPDF'));
 
 function getTicketStatus(eventDate) {
   const today = new Date();
