@@ -4,8 +4,8 @@
   "info": {
     "singularName": "ticket",
     "pluralName": "tickets",
-    "displayName": "ticket",
-    "description": "Ticket products for events"
+    "displayName": "Ticket Product",
+    "description": "Ticket products for events - separate from equipment products"
   },
   "options": {
     "draftAndPublish": true
@@ -15,29 +15,30 @@
     "users_permissions_user": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "required": true
     },
     "title": {
       "type": "string",
-      "required": true
-    },
-    "category": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::category.category"
-    },
-    "minimal_order": {
-      "type": "integer",
       "required": true,
-      "default": 1
+      "minLength": 3,
+      "maxLength": 255
     },
-    "minimal_order_date": {
-      "type": "date"
+    "description": {
+      "type": "customField",
+      "options": {
+        "preset": "default"
+      },
+      "customField": "plugin::ckeditor5.CKEditor",
+      "required": false
     },
-    "variant": {
-      "type": "component",
-      "repeatable": true,
-      "component": "variant-product.variant-product"
+    "terms_conditions": {
+      "type": "customField",
+      "options": {
+        "preset": "default"
+      },
+      "customField": "plugin::ckeditor5.CKEditor",
+      "required": false
     },
     "main_image": {
       "type": "media",
@@ -48,44 +49,53 @@
         "files"
       ]
     },
-    "description": {
-      "type": "customField",
-      "options": {
-        "preset": "default"
-      },
-      "customField": "plugin::ckeditor5.CKEditor"
+    "variant": {
+      "type": "component",
+      "repeatable": true,
+      "component": "variant-product.variant-product",
+      "required": true
     },
-    "terms_conditions": {
-      "type": "customField",
-      "options": {
-        "preset": "default"
-      },
-      "customField": "plugin::ckeditor5.CKEditor"
+    "event_date": {
+      "type": "date",
+      "required": true
     },
-    "rate": {
-      "type": "decimal",
-      "default": 5
+    "waktu_event": {
+      "type": "string",
+      "regex": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$",
+      "required": false
     },
-    "kabupaten": {
+    "end_date": {
+      "type": "date",
+      "required": false
+    },
+    "end_time": {
+      "type": "string",
+      "regex": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$",
+      "required": false
+    },
+    "lokasi_event": {
+      "type": "string",
+      "maxLength": 500,
+      "required": false
+    },
+    "kota_event": {
       "type": "string",
       "required": false
     },
-    "region": {
-      "type": "string"
+    "rate": {
+      "type": "decimal",
+      "default": 5,
+      "min": 0,
+      "max": 5
     },
     "sold_count": {
       "type": "integer",
-      "default": 0
+      "default": 0,
+      "min": 0
     },
     "escrow": {
       "type": "boolean",
       "default": false
-    },
-    "blogs": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::blog.blog",
-      "mappedBy": "tickets"
     },
     "state": {
       "type": "enumeration",
@@ -96,31 +106,17 @@
       ],
       "default": "pending"
     },
-    "event_date": {
-      "type": "date",
-      "required": false
-    },
-    "waktu_event": {
-      "type": "string"
-    },
-    "lokasi_event": {
-      "type": "string"
-    },
-    "kota_event": {
-      "type": "string"
-    },
-    "end_date": {
-      "type": "date"
-    },
-    "end_time": {
-      "type": "string"
-    },
     "ticket_details": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::ticket-detail.ticket-detail",
-      "mappedBy": "ticket",
-      "description": "Individual ticket records for this ticket product"
+      "mappedBy": "ticket"
+    },
+    "blogs": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog.blog",
+      "mappedBy": "tickets"
     }
   }
 }
