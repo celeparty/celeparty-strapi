@@ -3,7 +3,6 @@ const PDFDocument = require('pdfkit');
 const { Readable } = require('stream');
 const crypto = require('crypto');
 const path = require('path');
-const { generateProfessionalTicketPDF } = require(path.join(__dirname, '../../utils/generateProfessionalTicketPDF'));
 const fs = require('fs');
 
 async function generateInvoicePDF({ transaction, ticketDetails }) {
@@ -602,6 +601,10 @@ Terima kasih telah menggunakan Celeparty!`;
 
     if (shouldSendEmail) {
       try {
+        // Lazy load the PDF generator to avoid module resolution issues
+        const generatorPath = path.resolve(__dirname, '../../utils/generateProfessionalTicketPDF.js');
+        const { generateProfessionalTicketPDF } = require(generatorPath);
+        
         const quantity = parseInt(result.quantity);
 
         if (quantity > 1) {

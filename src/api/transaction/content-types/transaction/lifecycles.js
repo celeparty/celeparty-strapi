@@ -1,5 +1,4 @@
 const path = require('path');
-const { generateProfessionalTicketPDF } = require(path.join(__dirname, '../../transaction-ticket/utils/generateProfessionalTicketPDF'));
 
 function getTicketStatus(eventDate) {
   const today = new Date();
@@ -14,7 +13,9 @@ module.exports = {
     const { result } = event;
     if (result.event_type === 'Ticket' && result.email) {
       try {
-        // Build QR code URL
+        // Lazy load the PDF generator to avoid module resolution issues
+        const generatorPath = path.resolve(__dirname, '../../transaction-ticket/utils/generateProfessionalTicketPDF.js');
+        const { generateProfessionalTicketPDF } = require(generatorPath);
         const baseUrl = process.env.FRONT_URL+'/qr';
         const params = new URLSearchParams({
           order_id: result.order_id,
