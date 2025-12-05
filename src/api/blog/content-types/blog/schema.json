@@ -42,6 +42,12 @@
       "relation": "manyToMany",
       "target": "api::product.product",
       "inversedBy": "blogs"
+    },
+    "tickets": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::ticket.ticket",
+      "inversedBy": "blogs"
     }
   }
 }
