@@ -28,6 +28,9 @@ module.exports = createCoreController('api::ticket.ticket', {
       }
 
       data.users_permissions_user = userId;
+      
+      // Set initial status as unpublished (will be published by admin through Strapi)
+      data.publishedAt = null;
 
       console.log('Creating ticket for user:', userId);
       console.log('Ticket data:', JSON.stringify(data, null, 2));
