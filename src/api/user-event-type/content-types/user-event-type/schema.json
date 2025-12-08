@@ -37,6 +37,12 @@
       "target": "api::product.product",
       "mappedBy": "user_event_type"
     },
+    "tickets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ticket.ticket",
+      "mappedBy": "user_event_type"
+    },
     "application_fee": {
       "type": "integer"
     }

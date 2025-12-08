@@ -93,26 +93,38 @@ module.exports = createCoreController('api::ticket.ticket', {
   },
 
   /**
-   * Override find to filter by current user (vendor)
+   * Override find to allow public access to approved tickets and filter by user for vendors
    */
   async find(ctx) {
     try {
       const userId = ctx.state.user?.id;
-      
-      if (!userId) {
-        return ctx.unauthorized('User not authenticated');
+
+      // If user is authenticated (vendor), show only their tickets
+      if (userId) {
+        ctx.query.filters = ctx.query.filters || {};
+        ctx.query.filters.users_permissions_user = userId;
+
+        // Call the default find handler with the modified query
+        const result = await super.find(ctx);
+
+        console.log(`Fetched ${result.data?.length || 0} tickets for user ${userId}`);
+
+        return result;
+      } else {
+        // Public access - only show approved tickets
+        ctx.query.filters = ctx.query.filters || {};
+        ctx.query.filters.state = 'approved';
+
+        // Ensure populate includes user_event_type for frontend filtering
+        ctx.query.populate = ctx.query.populate || '*';
+
+        // Call the default find handler with the modified query
+        const result = await super.find(ctx);
+
+        console.log(`Fetched ${result.data?.length || 0} approved tickets for public access`);
+
+        return result;
       }
-
-      // Set filter to only return tickets owned by current user
-      ctx.query.filters = ctx.query.filters || {};
-      ctx.query.filters.users_permissions_user = userId;
-
-      // Call the default find handler with the modified query
-      const result = await super.find(ctx);
-      
-      console.log(`Fetched ${result.data?.length || 0} tickets for user ${userId}`);
-      
-      return result;
     } catch (error) {
       console.error('Error in ticket find:', error);
       return ctx.badRequest('Error fetching tickets', { error: error.message });

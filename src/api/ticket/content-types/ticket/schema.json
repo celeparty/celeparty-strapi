@@ -18,6 +18,12 @@
       "target": "plugin::users-permissions.user",
       "required": true
     },
+    "user_event_type": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-event-type.user-event-type",
+      "inversedBy": "tickets"
+    },
     "title": {
       "type": "string",
       "required": true,
