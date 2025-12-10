@@ -111,9 +111,8 @@ module.exports = createCoreController('api::ticket.ticket', {
 
         return result;
       } else {
-        // Public access - only show approved tickets
-        ctx.query.filters = ctx.query.filters || {};
-        ctx.query.filters.state = 'approved';
+        // Public access - show all published tickets (draftAndPublish handles publication)
+        // Remove state filter to let Strapi's draftAndPublish handle published items
 
         // Ensure populate includes user_event_type for frontend filtering
         ctx.query.populate = ctx.query.populate || '*';
@@ -121,7 +120,7 @@ module.exports = createCoreController('api::ticket.ticket', {
         // Call the default find handler with the modified query
         const result = await super.find(ctx);
 
-        console.log(`Fetched ${result.data?.length || 0} approved tickets for public access`);
+        console.log(`Fetched ${result.data?.length || 0} published tickets for public access`);
 
         return result;
       }
