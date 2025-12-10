@@ -45,6 +45,10 @@
     },
     "application_fee": {
       "type": "integer"
+    },
+    "is_ticket": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
