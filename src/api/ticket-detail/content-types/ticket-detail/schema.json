@@ -150,6 +150,11 @@
       "relation": "manyToOne",
       "target": "api::transaction-ticket.transaction-ticket",
       "inversedBy": "ticket_details"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
     }
   }
 }
