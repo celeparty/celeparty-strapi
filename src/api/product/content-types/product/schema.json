@@ -97,6 +97,18 @@
       "type": "enumeration",
       "enum": ["pending", "rejected", "approved"],
       "default": "pending"
+    },
+    "transaction_tickets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction-ticket.transaction-ticket",
+      "mappedBy": "product"
+    },
+    "transactions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction.transaction",
+      "mappedBy": "product"
     }
   }
 }

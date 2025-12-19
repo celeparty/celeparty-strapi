@@ -435,6 +435,7 @@ export interface ApiBlogBlog extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     products: Schema.Attribute.Relation<'manyToMany', 'api::product.product'>;
     publishedAt: Schema.Attribute.DateTime;
+    tickets: Schema.Attribute.Relation<'manyToMany', 'api::ticket.ticket'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -653,6 +654,14 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         }
       >;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    transaction_tickets: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::transaction-ticket.transaction-ticket'
+    >;
+    transactions: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::transaction.transaction'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -848,8 +857,8 @@ export interface ApiTicketVerificationTicketVerification
 export interface ApiTicketTicket extends Struct.CollectionTypeSchema {
   collectionName: 'tickets';
   info: {
-    description: 'Ticket products for events';
-    displayName: 'ticket';
+    description: 'Ticket products for events - separate from equipment products';
+    displayName: 'Ticket Product';
     pluralName: 'tickets';
     singularName: 'ticket';
   };
@@ -858,7 +867,6 @@ export interface ApiTicketTicket extends Struct.CollectionTypeSchema {
   };
   attributes: {
     blogs: Schema.Attribute.Relation<'manyToMany', 'api::blog.blog'>;
-    category: Schema.Attribute.Relation<'oneToOne', 'api::category.category'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -872,8 +880,7 @@ export interface ApiTicketTicket extends Struct.CollectionTypeSchema {
     end_date: Schema.Attribute.Date;
     end_time: Schema.Attribute.String;
     escrow: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    event_date: Schema.Attribute.Date;
-    kabupaten: Schema.Attribute.String;
+    event_date: Schema.Attribute.Date & Schema.Attribute.Required;
     kota_event: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -881,17 +888,30 @@ export interface ApiTicketTicket extends Struct.CollectionTypeSchema {
       'api::ticket.ticket'
     > &
       Schema.Attribute.Private;
-    lokasi_event: Schema.Attribute.String;
+    lokasi_event: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
     main_image: Schema.Attribute.Media<'images' | 'files', true> &
       Schema.Attribute.Required;
-    minimal_order: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<1>;
-    minimal_order_date: Schema.Attribute.Date;
     publishedAt: Schema.Attribute.DateTime;
-    rate: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<5>;
-    region: Schema.Attribute.String;
-    sold_count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    rate: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 5;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<5>;
+    sold_count: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     state: Schema.Attribute.Enumeration<['pending', 'rejected', 'approved']> &
       Schema.Attribute.DefaultTo<'pending'>;
     terms_conditions: Schema.Attribute.RichText &
@@ -905,18 +925,29 @@ export interface ApiTicketTicket extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::ticket-detail.ticket-detail'
     >;
-    title: Schema.Attribute.String & Schema.Attribute.Required;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+        minLength: 3;
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    users_permissions_user: Schema.Attribute.Relation<
-      'oneToOne',
-      'plugin::users-permissions.user'
+    user_event_type: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::user-event-type.user-event-type'
     >;
+    users_permissions_user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.Required;
     variant: Schema.Attribute.Component<
       'variant-product.variant-product',
       true
-    >;
+    > &
+      Schema.Attribute.Required;
     waktu_event: Schema.Attribute.String;
   };
 }
@@ -951,6 +982,7 @@ export interface ApiTransactionTicketTransactionTicket
     order_id: Schema.Attribute.String;
     payment_status: Schema.Attribute.String;
     price: Schema.Attribute.String;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
     product_name: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.String;
@@ -1000,6 +1032,7 @@ export interface ApiTransactionTransaction extends Struct.CollectionTypeSchema {
     note: Schema.Attribute.Text;
     order_id: Schema.Attribute.String;
     payment_status: Schema.Attribute.String & Schema.Attribute.Required;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
     products: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.String;
@@ -1037,6 +1070,7 @@ export interface ApiUserEventTypeUserEventType
       Schema.Attribute.Private;
     image: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
+    is_ticket: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1046,6 +1080,7 @@ export interface ApiUserEventTypeUserEventType
     name: Schema.Attribute.String & Schema.Attribute.Required;
     products: Schema.Attribute.Relation<'oneToMany', 'api::product.product'>;
     publishedAt: Schema.Attribute.DateTime;
+    tickets: Schema.Attribute.Relation<'oneToMany', 'api::ticket.ticket'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
