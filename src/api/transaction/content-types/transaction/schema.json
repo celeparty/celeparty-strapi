@@ -62,6 +62,14 @@
     "vendor_doc_id": {
       "type": "string"
     },
+    "ticket_recipients": {
+      "type": "json",
+      "required": false
+    },
+    "total_quantity": {
+      "type": "integer",
+      "required": false
+    },
     "product": {
       "type": "relation",
       "relation": "manyToOne",

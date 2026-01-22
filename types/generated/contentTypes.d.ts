@@ -1001,7 +1001,7 @@ export interface ApiTransactionTicketTransactionTicket
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     variant: Schema.Attribute.String;
-    vendor_id: Schema.Attribute.String;
+    vendor_doc_id: Schema.Attribute.String;
     verification: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
   };
 }

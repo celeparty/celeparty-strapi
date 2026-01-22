@@ -1,77 +1,77 @@
 {
-  "kind": "collectionType",
-  "collectionName": "transaction_tickets",
-  "info": {
-    "singularName": "transaction-ticket",
-    "pluralName": "transaction-tickets",
-    "displayName": "transaction-ticket",
-    "description": ""
-  },
-  "options": {
-    "draftAndPublish": false
-  },
-  "pluginOptions": {},
-  "attributes": {
-    "product_name": {
-      "type": "string"
+    "kind": "collectionType",
+    "collectionName": "transaction_tickets",
+    "info": {
+        "singularName": "transaction-ticket",
+        "pluralName": "transaction-tickets",
+        "displayName": "transaction-ticket",
+        "description": ""
     },
-    "price": {
-      "type": "string"
+    "options": {
+        "draftAndPublish": false
     },
-    "quantity": {
-      "type": "string"
-    },
-    "variant": {
-      "type": "string"
-    },
-    "customer_name": {
-      "type": "string"
-    },
-    "telp": {
-      "type": "string"
-    },
-    "total_price": {
-      "type": "string"
-    },
-    "payment_status": {
-      "type": "string"
-    },
-    "event_date": {
-      "type": "string"
-    },
-    "event_type": {
-      "type": "string"
-    },
-    "note": {
-      "type": "text"
-    },
-    "order_id": {
-      "type": "string"
-    },
-    "customer_mail": {
-      "type": "string"
-    },
-    "verification": {
-      "type": "boolean",
-      "default": false
-    },
-    "vendor_id": {
-      "type": "string"
-    },
-    "recipients": {
-      "type": "json"
-    },
-    "ticket_details": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::ticket-detail.ticket-detail",
-      "mappedBy": "transaction_ticket"
-    },
-    "product": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::product.product",
-      "inversedBy": "transaction_tickets"
+    "pluginOptions": {},
+    "attributes": {
+        "product_name": {
+            "type": "string"
+        },
+        "price": {
+            "type": "string"
+        },
+        "quantity": {
+            "type": "string"
+        },
+        "variant": {
+            "type": "string"
+        },
+        "customer_name": {
+            "type": "string"
+        },
+        "telp": {
+            "type": "string"
+        },
+        "total_price": {
+            "type": "string"
+        },
+        "payment_status": {
+            "type": "string"
+        },
+        "event_date": {
+            "type": "string"
+        },
+        "event_type": {
+            "type": "string"
+        },
+        "note": {
+            "type": "text"
+        },
+        "order_id": {
+            "type": "string"
+        },
+        "customer_mail": {
+            "type": "string"
+        },
+        "verification": {
+            "type": "boolean",
+            "default": false
+        },
+        "vendor_doc_id": {
+            "type": "string"
+        },
+        "recipients": {
+            "type": "json"
+        },
+        "ticket_details": {
+            "type": "relation",
+            "relation": "oneToMany",
+            "target": "api::ticket-detail.ticket-detail",
+            "mappedBy": "transaction_ticket"
+        },
+        "product": {
+            "type": "relation",
+            "relation": "manyToOne",
+            "target": "api::product.product",
+            "inversedBy": "transaction_tickets"
+        }
     }
-  }
 }
