@@ -302,8 +302,8 @@ Halo,\n\nTransaksi Anda telah berhasil. Berikut detail transaksi Anda:\n\n- Stat
   async afterUpdate(event) {
     const { result, params } = event;
 
-    // Send invoice email when payment status changes to success
-    if (params.data.payment_status === 'success' && result.email) {
+    // Send invoice email when payment status changes to settlement
+    if (params.data.payment_status === 'settlement' && result.email) {
       try {
         strapi.log.info(`[Invoice Email] Sending invoice email for transaction ID: ${result.id}`);
 
